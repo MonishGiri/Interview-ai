@@ -22,6 +22,7 @@ $accent: #ff2d78;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    position: relative;
 }
 
 .navbar-brand {
@@ -63,6 +64,9 @@ $accent: #ff2d78;
         font-size: 0.875rem;
         font-weight: 500;
         transition: color 0.2s;
+        cursor: pointer;
+        background: none;
+        border: none;
 
         &:hover {
             color: $text-primary;
@@ -231,6 +235,198 @@ $accent: #ff2d78;
         &:hover {
             transform: translateY(-1px);
             opacity: 0.95;
+        }
+    }
+}
+
+/* --- Mobile Menu and Responsive styles --- */
+
+.mobile-menu-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: $text-primary;
+    cursor: pointer;
+    padding: 0.5rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.35rem;
+    transition: background-color 0.2s;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+}
+
+.mobile-only-auth {
+    display: none;
+}
+
+.desktop-only-auth {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-btn {
+        display: flex;
+    }
+
+    .desktop-only-auth {
+        display: none;
+    }
+
+    .navbar-links {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        background-color: rgba($bg-dropdown, 0.98);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border-bottom: 1px solid $border-color;
+        padding: 1.5rem;
+        box-sizing: border-box;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        transform: translateY(-10px);
+        opacity: 0;
+        pointer-events: none;
+        transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+        z-index: 99;
+
+        &--open {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .nav-link {
+            font-size: 0.95rem;
+            padding: 0.6rem 0;
+            border-bottom: 1px solid rgba($border-color, 0.3);
+            width: 100%;
+            display: block;
+
+            &--btn {
+                text-align: center;
+                border-radius: 2rem;
+                padding: 0.6rem;
+                border-bottom: none;
+                margin-top: 0.5rem;
+            }
+        }
+    }
+
+    .mobile-only-auth {
+        display: block;
+        margin-top: 0.5rem;
+        border-top: 1px solid rgba($border-color, 0.6);
+        padding-top: 1rem;
+
+        .mobile-profile-options {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .mobile-user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+
+            .avatar-circle {
+                width: 32px;
+                height: 32px;
+                font-size: 0.9rem;
+            }
+        }
+
+        .mobile-user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 0.1rem;
+
+            .mobile-username {
+                font-size: 0.9rem;
+                font-weight: 700;
+                color: $text-primary;
+                margin: 0;
+            }
+
+            .mobile-email {
+                font-size: 0.75rem;
+                color: $text-muted;
+                margin: 0;
+            }
+        }
+
+        .mobile-dropdown-link {
+            font-size: 0.9rem;
+            color: $text-primary;
+            text-decoration: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid rgba($border-color, 0.3);
+            display: block;
+            font-weight: 500;
+
+            &:hover {
+                color: $accent;
+            }
+        }
+
+        .mobile-logout-btn {
+            background-color: rgba(#ff4d4d, 0.1);
+            color: #ff4d4d;
+            border: 1px solid rgba(#ff4d4d, 0.25);
+            border-radius: 2rem;
+            padding: 0.6rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            text-align: center;
+            font-family: inherit;
+            margin-top: 0.5rem;
+            transition: background-color 0.2s;
+
+            &:hover {
+                background-color: rgba(#ff4d4d, 0.18);
+            }
+        }
+
+        .mobile-auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+
+            .mobile-login-link {
+                color: $text-primary;
+                text-decoration: none;
+                font-size: 0.9rem;
+                font-weight: 600;
+                text-align: center;
+                padding: 0.6rem;
+                border: 1px solid $border-color;
+                border-radius: 2rem;
+
+                &:hover {
+                    color: $accent;
+                    border-color: $accent;
+                }
+            }
+
+            .mobile-register-btn {
+                background: linear-gradient(135deg, $accent, #a78bfa);
+                color: #ffffff;
+                text-decoration: none;
+                padding: 0.6rem;
+                border-radius: 2rem;
+                font-size: 0.9rem;
+                font-weight: 700;
+                text-align: center;
+                box-shadow: 0 4px 15px rgba($accent, 0.25);
+            }
         }
     }
 }

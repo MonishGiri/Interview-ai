@@ -29,9 +29,13 @@ $severity-low: #3fb950;
     align-items: stretch;
     padding: 1.5rem;
     box-sizing: border-box;
+
+    @media (max-width: 768px) {
+        padding: 0.75rem;
+    }
 }
 
-// ── 3-Column Layout ───────────────────────────────────────────────────────────
+// ── 3-Column / Responsive Stacking Layout ────────────────────────────────────
 .interview-layout {
     display: flex;
     width: 100%;
@@ -41,15 +45,25 @@ $severity-low: #3fb950;
     border: 1px solid $border-color;
     border-radius: 1rem;
     justify-content: space-between;
+
+    @media (max-width: 1024px) {
+        flex-direction: column;
+        height: auto;
+    }
 }
 
 .interview-divider {
     width: 1px;
     background-color: $border-color;
     flex-shrink: 0;
+
+    @media (max-width: 1024px) {
+        width: 100%;
+        height: 1px;
+    }
 }
 
-// ── Left Nav ─────────────────────────────────────────────────────────────────
+// ── Left Nav (Converts to Horizontal Tabs on Mobile/Tablet) ──────────────────
 .interview-nav {
     width: 220px;
     flex-shrink: 0;
@@ -59,8 +73,11 @@ $severity-low: #3fb950;
     justify-content: space-between;
     gap: 0.25rem;
 
-
-
+    .nav-content {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
 
     &__label {
         font-size: 0.7rem;
@@ -87,6 +104,7 @@ $severity-low: #3fb950;
         cursor: pointer;
         text-align: left;
         transition: background-color 0.15s, color 0.15s;
+        white-space: nowrap;
 
         &:hover {
             background-color: $bg-panel;
@@ -108,6 +126,30 @@ $severity-low: #3fb950;
         align-items: center;
         flex-shrink: 0;
     }
+
+    @media (max-width: 1024px) {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1rem;
+        gap: 1rem;
+
+        .nav-content {
+            flex-direction: row;
+            overflow-x: auto;
+            gap: 0.5rem;
+            padding-bottom: 0.25rem;
+        }
+
+        &__label {
+            display: none;
+        }
+
+        &__item {
+            width: auto;
+            flex-shrink: 0;
+            padding: 0.5rem 0.85rem;
+        }
+    }
 }
 
 // ── Center Content ────────────────────────────────────────────────────────────
@@ -120,12 +162,10 @@ $severity-low: #3fb950;
     padding-bottom: 5rem;
     align-items: flex-start;
 
-
-
-
-
-
-
+    @media (max-width: 1024px) {
+        max-height: none;
+        padding: 1.25rem 1rem 2.5rem;
+    }
 
     section {
         min-height: 100%;
@@ -269,7 +309,6 @@ $severity-low: #3fb950;
     gap: 0;
     position: relative;
 
-    // vertical timeline line
     &::before {
         content: '';
         position: absolute;
@@ -289,7 +328,6 @@ $severity-low: #3fb950;
     padding: 0.75rem 0 0.75rem 3.5rem;
     position: relative;
 
-    // dot on timeline
     &::before {
         content: '';
         position: absolute;
@@ -342,15 +380,6 @@ $severity-low: #3fb950;
             line-height: 1.5;
         }
     }
-
-    &__bullet {
-        flex-shrink: 0;
-        width: 5px;
-        height: 5px;
-        border-radius: 50%;
-        background-color: $text-muted;
-        margin-top: 8px;
-    }
 }
 
 // ── Right Sidebar ─────────────────────────────────────────────────────────────
@@ -361,6 +390,24 @@ $severity-low: #3fb950;
     display: flex;
     flex-direction: column;
     gap: 1.25rem;
+
+    @media (max-width: 1024px) {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 1.5rem 1rem;
+        flex-direction: row;
+        justify-content: space-around;
+        align-items: flex-start;
+
+        .sidebar-divider {
+            display: none;
+        }
+    }
+
+    @media (max-width: 600px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
 }
 
 .sidebar-divider {
@@ -721,6 +768,10 @@ $severity-low: #3fb950;
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 0.75rem;
+
+        @media (max-width: 600px) {
+            grid-template-columns: 1fr;
+        }
     }
 }
 

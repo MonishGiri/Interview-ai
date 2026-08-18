@@ -97,9 +97,21 @@ const generateResumePdfController = asyncHandler(async (req, res) => {
         })
     }
 
-    const { resume, jobDescription, selfDescription } = interviewReport
+    const { resume, jobDescription, selfDescription, user: userId } = interviewReport
 
-    const pdfBuffer = await generateResumePdf({ resume, jobDescription, selfDescription })
+    // Retrieve user details to ensure the resume is generated with correct candidate name and email
+    const userModel = require("../models/user.model")
+    const user = await userModel.findById(userId)
+    const candidateName = user ? user.username : "Candidate"
+    const candidateEmail = user ? user.email : "candidate@interview.ai"
+
+    const pdfBuffer = await generateResumePdf({ 
+        resume, 
+        jobDescription, 
+        selfDescription,
+        candidateName,
+        candidateEmail
+    })
 
     res.set({
         "Content-Type": "application/pdf",
