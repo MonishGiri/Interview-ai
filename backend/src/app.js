@@ -6,8 +6,25 @@ const app = express()
 
 app.use(express.json())
 app.use(cookieParser())
+
+const allowedOrigins = [
+    process.env.CORS_ORIGIN,
+    "https://interview-ai-1-ycq8.onrender.com",
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://localhost:5174"
+].filter(Boolean).map(url => url.replace(/\/$/, ""))
+
 app.use(cors({
-    origin: "http://localhost:5173",
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like Postman or server-to-server)
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.replace(/\/$/, "");
+        if (allowedOrigins.includes(cleanOrigin)) {
+            return callback(null, true);
+        }
+        return callback(new Error("CORS Policy Violation: Origin not allowed"));
+    },
     credentials: true
 }))
 
