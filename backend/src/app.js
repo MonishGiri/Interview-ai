@@ -4,6 +4,9 @@ const cors = require("cors")
 
 const app = express()
 
+// Trust reverse proxy (essential for Render / HTTPS cross-site cookies)
+app.set("trust proxy", 1)
+
 app.use(express.json())
 app.use(cookieParser())
 
