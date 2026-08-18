@@ -42,14 +42,14 @@ const Generator = () => {
             <Navbar />
 
             <div className='home-page'>
-                <section className='generator-section'>
+                <section className='generator-section animate-fade-up'>
                     <header className='page-header'>
-                        <h1>Create Your Custom <span className='highlight'>Interview Strategy</span></h1>
+                        <h1>Create Your Custom <span className='highlight ai-gradient-text'>Interview Strategy</span></h1>
                         <p>Paste the target job description and upload your resume to generate a personalized preparation blueprint.</p>
                     </header>
 
                     {/* Generator Card */}
-                    <div className='interview-card'>
+                    <div className='interview-card animate-scale-in' style={{ animationDelay: '0.15s' }}>
                         <div className='interview-card__body'>
 
                             {/* Left Panel - Job Description */}

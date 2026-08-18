@@ -98,7 +98,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation }) 
                 </span>
             </div>
             {open && (
-                <div className='q-card__body'>
+                <div className='q-card__body animate-fade-down' style={{ animationDuration: '0.3s' }}>
                     <div className='q-card__section'>
                         <span className='q-card__tag q-card__tag--intention'>Intention</span>
                         <p>{item.intention}</p>
@@ -121,7 +121,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation }) 
                     </div>
 
                     {practiceMode && (
-                        <div className='practice-drawer'>
+                        <div className='practice-drawer animate-fade-down' style={{ animationDuration: '0.35s' }}>
                             <div className='practice-drawer__header'>
                                 <h4>Practice Your Answer</h4>
                                 <p>Record your voice or type your response to receive instant AI scoring and STAR breakdown.</p>
@@ -137,7 +137,14 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation }) 
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /></svg>
                                         {isListening ? 'Stop Recording...' : 'Record Voice Answer'}
                                     </button>
-                                    {isListening && <span className='recording-pulse'>&bull; Recording active</span>}
+                                    {isListening && (
+                                        <div className='recording-pulse-wrapper'>
+                                            <span className='wave-dot'></span>
+                                            <span className='wave-dot'></span>
+                                            <span className='wave-dot'></span>
+                                            <span className='recording-pulse-text'>Recording active</span>
+                                        </div>
+                                    )}
                                 </div>
 
                                 <textarea
@@ -155,7 +162,12 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation }) 
                                         disabled={evaluating || !userAnswer.trim()}
                                         onClick={handleEvaluate}
                                     >
-                                        {evaluating ? 'AI Evaluating...' : 'Evaluate My Answer'}
+                                        {evaluating ? (
+                                            <>
+                                                <span className="eval-spinner"></span>
+                                                AI Evaluating...
+                                            </>
+                                        ) : 'Evaluate My Answer'}
                                     </button>
                                 </div>
                             </div>
@@ -163,7 +175,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation }) 
                             {evalError && <p className='eval-error'>{evalError}</p>}
 
                             {evaluation && (
-                                <div className='eval-result'>
+                                <div className='eval-result animate-scale-in'>
                                     <div className='eval-result__header'>
                                         <div className={`eval-score-ring ${evaluation.score >= 8 ? 'score--high' : evaluation.score >= 6 ? 'score--mid' : 'score--low'}`}>
                                             <span className='eval-score-ring__val'>{evaluation.score}</span>
@@ -254,13 +266,17 @@ const Interview = () => {
         }
     }, [ interviewId ])
 
-    if (loading || !report) {
+    if (loading && !report) {
         return (
             <>
                 <Navbar />
                 <LoadingScreen useCase="interview_load" />
             </>
         )
+    }
+
+    if (!report) {
+        return null
     }
 
     const scoreColor =
@@ -275,8 +291,21 @@ const Interview = () => {
     return (
         <div className='page-wrapper'>
             <Navbar />
+            
+            {loading && (
+                <div className='resume-download-overlay animate-fade-in'>
+                    <div className='resume-download-overlay__content animate-scale-in'>
+                        <div className='spinner-outer'>
+                            <div className='spinner-inner'></div>
+                        </div>
+                        <h3 className="ai-gradient-text">Generating Resume</h3>
+                        <p>Optimizing layout and embedding clickable links...</p>
+                    </div>
+                </div>
+            )}
+
             <div className='interview-page'>
-            <div className='interview-layout'>
+            <div className='interview-layout animate-fade-up'>
 
                 {/* ── Left Nav ── */}
                 <nav className='interview-nav'>

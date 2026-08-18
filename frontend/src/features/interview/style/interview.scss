@@ -209,10 +209,22 @@ $severity-low: #3fb950;
     border: 1px solid $border-color;
     border-radius: 0.6rem;
     overflow: hidden;
-    transition: border-color 0.2s;
+
+    // Staggered slide in entrance
+    opacity: 0;
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+    @for $i from 1 through 12 {
+        &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.08s};
+        }
+    }
 
     &:hover {
-        border-color: lighten($border-color, 8%);
+        transform: translateY(-2px);
+        border-color: rgba($accent, 0.4);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3), 0 0 10px rgba($accent, 0.08);
     }
 
     &__header {
@@ -784,6 +796,7 @@ $severity-low: #3fb950;
     align-items: center;
     justify-content: center;
     border: 3px solid;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
     &__val {
         font-size: 1.1rem;
@@ -796,9 +809,18 @@ $severity-low: #3fb950;
         color: $text-muted;
     }
 
-    &.score--high { border-color: $severity-low; }
-    &.score--mid { border-color: $severity-medium; }
-    &.score--low { border-color: $severity-high; }
+    &.score--high {
+        border-color: $severity-low;
+        box-shadow: 0 0 12px rgba($severity-low, 0.4);
+    }
+    &.score--mid {
+        border-color: $severity-medium;
+        box-shadow: 0 0 12px rgba($severity-medium, 0.4);
+    }
+    &.score--low {
+        border-color: $severity-high;
+        box-shadow: 0 0 12px rgba($severity-high, 0.4);
+    }
 }
 
 .eval-card {
@@ -864,4 +886,121 @@ $severity-low: #3fb950;
     padding: 0.6rem 0.75rem;
     font-size: 0.8rem;
     color: lighten($accent, 15%);
+}
+
+// ── Resume Download Overlay ──
+.resume-download-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(13, 17, 25, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+
+    &__content {
+        background-color: #161b22;
+        border: 1px solid #2a3348;
+        border-radius: 1.25rem;
+        padding: 2.5rem 2rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 1.25rem;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 25px rgba(#ff2d78, 0.15);
+
+        h3 {
+            font-size: 1.35rem;
+            font-weight: 800;
+            margin: 0;
+        }
+
+        p {
+            font-size: 0.9rem;
+            color: #7d8590;
+            margin: 0;
+            line-height: 1.5;
+        }
+    }
+}
+
+.spinner-outer {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid transparent;
+    border-top-color: #ff2d78;
+    animation: spin-clockwise 1.2s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(#ff2d78, 0.7));
+
+    .spinner-inner {
+        position: absolute;
+        top: 6px;
+        left: 6px;
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        border: 3px solid transparent;
+        border-bottom-color: #a78bfa;
+        animation: spin-counterclockwise 0.9s linear infinite;
+        filter: drop-shadow(0 0 6px rgba(#a78bfa, 0.7));
+    }
+}
+
+// ── Voice Wave and Mic Indicators ──
+.recording-pulse-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 8px;
+    height: 20px;
+    
+    .recording-pulse-text {
+        font-size: 0.75rem;
+        color: #ff4d4d;
+        font-weight: 600;
+        margin-left: 4px;
+    }
+}
+
+.wave-dot {
+    width: 3px;
+    height: 10px;
+    background-color: #ff4d4d;
+    border-radius: 2px;
+    animation: soundwave 1.2s ease-in-out infinite;
+
+    &:nth-child(1) {
+        animation-delay: 0s;
+        height: 8px;
+    }
+    &:nth-child(2) {
+        animation-delay: 0.15s;
+        height: 14px;
+    }
+    &:nth-child(3) {
+        animation-delay: 0.3s;
+        height: 6px;
+    }
+}
+
+.eval-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(#ffffff, 0.3);
+    border-radius: 50%;
+    border-top-color: #ffffff;
+    animation: spin-clockwise 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
 }

@@ -28,6 +28,9 @@ $accent: #ff2d78;
         gap: 1.5rem;
         box-sizing: border-box;
 
+        opacity: 0;
+        animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
         @media (max-width: 480px) {
             padding: 1.75rem 1.25rem;
         }
@@ -66,10 +69,11 @@ $accent: #ff2d78;
             padding: 0.75rem 1rem;
             border-radius: 0.5rem;
             font-size: 0.9rem;
-            transition: border-color 0.2s;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
             &:focus {
                 border-color: $accent;
+                box-shadow: 0 0 0 2px rgba($accent, 0.2), 0 0 10px rgba($accent, 0.1);
             }
 
             &::placeholder {
@@ -87,12 +91,17 @@ $accent: #ff2d78;
         font-size: 0.95rem;
         font-weight: 700;
         cursor: pointer;
-        transition: opacity 0.2s, transform 0.1s;
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         margin-top: 0.5rem;
 
         &:hover {
             opacity: 0.95;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba($accent, 0.3), 0 0 8px rgba($accent, 0.15);
+        }
+
+        &:active {
+            transform: scale(0.97) !important;
         }
     }
 

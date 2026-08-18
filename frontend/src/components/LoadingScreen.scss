@@ -48,6 +48,7 @@ $accent-purple: #a78bfa;
         border-top-color: $accent;
         border-right-color: rgba($accent, 0.3);
         animation: spin-clockwise 1.2s linear infinite;
+        filter: drop-shadow(0 0 8px rgba($accent, 0.7));
     }
 
     &.ring-inner {
@@ -56,6 +57,7 @@ $accent-purple: #a78bfa;
         border-bottom-color: $accent-purple;
         border-left-color: rgba($accent-purple, 0.3);
         animation: spin-counterclockwise 0.9s linear infinite;
+        filter: drop-shadow(0 0 8px rgba($accent-purple, 0.7));
     }
 }
 
@@ -80,10 +82,14 @@ $accent-purple: #a78bfa;
 }
 
 .loading-title {
-    font-size: 1.25rem;
-    font-weight: 700;
+    font-size: 1.35rem;
+    font-weight: 800;
     margin: 0 0 0.5rem 0;
-    color: $text-primary;
+    background: linear-gradient(135deg, #e1034d 0%, #ff5287 50%, #a78bfa 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: aiGlowText 3s linear infinite;
 }
 
 .loading-subtitle {
@@ -107,6 +113,16 @@ $accent-purple: #a78bfa;
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+
+    // Entrance animation
+    opacity: 0;
+    animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+
+    @for $i from 1 through 3 {
+        &:nth-child(#{$i}) {
+            animation-delay: #{$i * 0.1s};
+        }
+    }
 }
 
 .skeleton-line {

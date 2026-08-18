@@ -41,17 +41,17 @@ const Home = () => {
             <div className='home-page'>
 
                 {/* Hero Platform Briefing Section */}
-                <section id="about-platform" className='hero-section'>
-                    <div className='hero-badge'>AI-Powered Career Intelligence Platform</div>
-                    <h1 className='hero-title'>
-                        Master Every Technical &amp; Behavioral Interview with <span className='highlight'>AI Intelligence</span>
+                <section id="about-platform" className='hero-section animate-fade-up'>
+                    <div className='hero-badge animate-fade-in'>AI-Powered Career Intelligence Platform</div>
+                    <h1 className='hero-title animate-fade-up' style={{ animationDelay: '0.1s' }}>
+                        Master Every Technical &amp; Behavioral Interview with <span className='highlight ai-gradient-text'>AI Intelligence</span>
                     </h1>
-                    <p className='hero-description'>
+                    <p className='hero-description animate-fade-up' style={{ animationDelay: '0.2s' }}>
                         InterviewAI turns target job descriptions and candidate resumes into tailored preparation roadmaps: technical questions with model answers, interviewer hidden intentions, interactive task tracking, voice mock practice, and ATS resume export.
                     </p>
 
                     {/* Theme-Matched "Get Started" CTA Button */}
-                    <div className='hero-cta-wrapper'>
+                    <div className='hero-cta-wrapper animate-fade-up' style={{ animationDelay: '0.3s' }}>
                         <button
                             type="button"
                             className='get-started-btn'
@@ -67,9 +67,9 @@ const Home = () => {
                 </section>
 
                 {/* How It Works Section */}
-                <section id="how-it-works" className='workflow-section'>
+                <section id="how-it-works" className='workflow-section animate-fade-up' style={{ animationDelay: '0.4s' }}>
                     <div className='section-title-wrapper'>
-                        <h2>How <span className='highlight'>InterviewAI</span> Works</h2>
+                        <h2>How <span className='highlight ai-gradient-text'>InterviewAI</span> Works</h2>
                         <p>Three simple steps to transition from candidate to top-tier contender.</p>
                     </div>
 
@@ -93,9 +93,9 @@ const Home = () => {
                 </section>
 
                 {/* Platform Specifications & Features Grid */}
-                <section id="features-overview" className='specifications-section'>
+                <section id="features-overview" className='specifications-section animate-fade-up'>
                     <div className='section-title-wrapper'>
-                        <h2>Platform <span className='highlight'>Specifications &amp; Features</span></h2>
+                        <h2>Platform <span className='highlight ai-gradient-text'>Specifications &amp; Features</span></h2>
                         <p>Everything you need for comprehensive, end-to-end interview victory.</p>
                     </div>
 
@@ -135,7 +135,7 @@ const Home = () => {
 
                 {/* Recent Reports List (For Logged-in Users) */}
                 {user && reports.length > 0 && (
-                    <section id="recent-reports" className='recent-reports'>
+                    <section id="recent-reports" className='recent-reports animate-fade-up'>
                         <div className='recent-reports__header'>
                             <h2>My Strategy Reports</h2>
                             <button
@@ -158,7 +158,7 @@ const Home = () => {
                 )}
 
                 {/* Bottom CTA Banner */}
-                <section className='cta-banner'>
+                <section className='cta-banner animate-fade-up'>
                     <h2>Ready to Ace Your Next Interview?</h2>
                     <p>Join thousands of candidates preparing smarter with AI-driven interview intelligence.</p>
                     <button type="button" className='get-started-btn' onClick={handleGetStarted}>

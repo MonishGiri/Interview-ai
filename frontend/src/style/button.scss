@@ -1,20 +1,27 @@
-.button{
-
+.button {
     border: none;
     outline: none;
     padding-inline: 1.5rem;
     padding-block: 0.75rem;
     border-radius: 1rem;
     cursor: pointer;
+    font-weight: 600;
 
-    transition: all 0.3s ease-in-out;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 
-    &.primary-button{
-        background-color: #e1034d;
+    &.primary-button {
+        background: linear-gradient(135deg, #e1034d 0%, #ff4b7b 100%);
         color: white;
+        box-shadow: 0 4px 12px rgba(225, 3, 77, 0.2);
+
+        &:hover {
+            background: linear-gradient(135deg, #f20e5c 0%, #ff618b 100%);
+            box-shadow: 0 6px 20px rgba(225, 3, 77, 0.4), 0 0 10px rgba(225, 3, 77, 0.2);
+            transform: translateY(-2px);
+        }
     }
 
-    &:active{
-        transform: scale(0.9);
+    &:active {
+        transform: scale(0.96) !important;
     }
 }
