@@ -64,6 +64,19 @@ const preparationPlanSchema = new mongoose.Schema({
     } ]
 })
 
+const completedTaskSchema = new mongoose.Schema({
+    day: {
+        type: Number,
+        required: true
+    },
+    taskIndex: {
+        type: Number,
+        required: true
+    }
+}, {
+    _id: false
+})
+
 const interviewReportSchema = new mongoose.Schema({
     jobDescription: {
         type: String,
@@ -84,6 +97,7 @@ const interviewReportSchema = new mongoose.Schema({
     behavioralQuestions: [ behavioralQuestionSchema ],
     skillGaps: [ skillGapSchema ],
     preparationPlan: [ preparationPlanSchema ],
+    completedTasks: [ completedTaskSchema ],
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "users"

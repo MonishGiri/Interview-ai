@@ -1,0 +1,236 @@
+$bg-navbar: #161b22;
+$bg-dropdown: #1c2230;
+$border-color: #2a3348;
+$text-primary: #e6edf3;
+$text-muted: #7d8590;
+$accent: #ff2d78;
+
+.main-navbar {
+    width: 100%;
+    background-color: $bg-navbar;
+    border-bottom: 1px solid $border-color;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-sizing: border-box;
+}
+
+.navbar-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0.85rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.navbar-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    text-decoration: none;
+
+    .brand-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 0.5rem;
+        background: linear-gradient(135deg, $accent, #a78bfa);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .brand-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: $text-primary;
+    }
+
+    .brand-highlight {
+        color: $accent;
+    }
+}
+
+.navbar-links {
+    display: flex;
+    align-items: center;
+    gap: 1.75rem;
+
+    .nav-link {
+        color: $text-muted;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: color 0.2s;
+
+        &:hover {
+            color: $text-primary;
+        }
+
+        &--btn {
+            background-color: rgba($accent, 0.12);
+            color: $accent;
+            border: 1px solid rgba($accent, 0.3);
+            padding: 0.35rem 0.85rem;
+            border-radius: 2rem;
+            font-weight: 700;
+
+            &:hover {
+                background-color: rgba($accent, 0.22);
+                color: $accent;
+            }
+        }
+    }
+}
+
+.navbar-user {
+    position: relative;
+}
+
+.profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    background-color: $bg-dropdown;
+    border: 1px solid $border-color;
+    padding: 0.35rem 0.75rem 0.35rem 0.4rem;
+    border-radius: 2rem;
+    cursor: pointer;
+    color: $text-primary;
+
+    &:hover {
+        border-color: lighten($border-color, 10%);
+    }
+}
+
+.avatar-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a78bfa, $accent);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.chevron {
+    color: $text-muted;
+    transition: transform 0.2s;
+
+    &--open {
+        transform: rotate(180deg);
+        color: $accent;
+    }
+}
+
+.profile-dropdown {
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.5rem);
+    width: 220px;
+    background-color: $bg-dropdown;
+    border: 1px solid $border-color;
+    border-radius: 0.6rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    z-index: 110;
+}
+
+.dropdown-header {
+    padding: 0.6rem 1rem;
+
+    .dropdown-username {
+        margin: 0;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: $text-primary;
+    }
+
+    .dropdown-email {
+        margin: 0.15rem 0 0 0;
+        font-size: 0.75rem;
+        color: $text-muted;
+    }
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: $border-color;
+    margin: 0.4rem 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+    color: $text-primary;
+    font-size: 0.825rem;
+    text-decoration: none;
+    background: none;
+    border: none;
+    width: 100%;
+    text-align: left;
+    cursor: pointer;
+    transition: background-color 0.15s;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    &.logout-item {
+        color: #ff4d4d;
+
+        svg {
+            stroke: #ff4d4d;
+        }
+
+        &:hover {
+            background-color: rgba(#ff4d4d, 0.1);
+        }
+    }
+}
+
+.navbar-auth-buttons {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    .login-link {
+        color: $text-primary;
+        text-decoration: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+
+        &:hover {
+            color: $accent;
+        }
+    }
+
+    .register-btn {
+        background: linear-gradient(135deg, $accent, #a78bfa);
+        color: #ffffff;
+        text-decoration: none;
+        padding: 0.45rem 1.1rem;
+        border-radius: 2rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        transition: transform 0.2s, opacity 0.2s;
+
+        &:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+    }
+}

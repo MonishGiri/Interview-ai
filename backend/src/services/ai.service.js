@@ -42,7 +42,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 `
 
     const response = await ai.models.generateContent({
-        model: "gemini-3-flash-preview",
+        model: process.env.GEMINI_AI_MODEL,
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -93,10 +93,14 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
                         you can highlight the content using some colors or different font styles but the overall design should be simple and professional.
                         The content should be ATS friendly, i.e. it should be easily parsable by ATS systems without losing important information.
                         The resume should not be so lengthy, it should ideally be 1-2 pages long when converted to PDF. Focus on quality rather than quantity and make sure to include all the relevant information that can increase the candidate's chances of getting an interview call for the given job description.
+
+                        CRITICAL HYPERLINK REQUIREMENT:
+                        All social profiles, LinkedIn, GitHub, portfolio, and email links MUST be wrapped in explicit HTML anchor tags: <a href="https://..." target="_blank">...</a>.
+                        Every href attribute MUST start with an explicit http:// or https:// scheme (e.g. href="https://linkedin.com/in/..." and href="https://github.com/..."). Do NOT output protocol-less URLs.
                     `
 
     const response = await ai.models.generateContent({
-        model: "gemini-3.6-flash",
+        model: process.env.GEMINI_AI_MODEL,
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -107,10 +111,52 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
 
     const jsonContent = JSON.parse(response.text)
 
-    const pdfBuffer = await generatePdfFromHtml(jsonContent.html)
+    let htmlContent = jsonContent.html || ""
+    // Ensure all href links have valid https:// protocol so PDF readers make them clickable
+    htmlContent = htmlContent.replace(/href=["'](?!https?:\/\/|mailto:|tel:)([^"']+)["']/gi, (match, url) => {
+        const cleanUrl = url.trim().replace(/^\/+/, '')
+        return `href="https://${cleanUrl}"`
+    })
+
+    const pdfBuffer = await generatePdfFromHtml(htmlContent)
 
     return pdfBuffer
 
 }
 
-module.exports = { generateInterviewReport, generateResumePdf }
+const answerEvaluationSchema = z.object({
+    score: z.number().min(1).max(10).describe("Score out of 10 for the user's answer"),
+    feedback: z.string().describe("Constructive summary feedback on the answer quality"),
+    strengths: z.array(z.string()).describe("List of strengths identified in the user's response"),
+    improvements: z.array(z.string()).describe("List of missing concepts, key terms, or areas to improve"),
+    starAnalysis: z.object({
+        situationAndTask: z.string().describe("Feedback on how well the candidate established situation or context"),
+        action: z.string().describe("Feedback on how well the candidate described specific actions taken"),
+        result: z.string().describe("Feedback on whether measurable outcomes/results were communicated")
+    }).describe("Evaluation following the STAR technique"),
+    modelAnswerTip: z.string().describe("One killer tip to elevate this answer to an elite interview level")
+})
+
+async function evaluateUserAnswer({ question, intention, modelAnswer, userAnswer, questionType }) {
+    const prompt = `Evaluate the candidate's answer for the following interview question:
+Question (${questionType || 'General'}): ${question}
+Interviewer Intention: ${intention}
+Ideal Model Answer Reference: ${modelAnswer}
+
+Candidate's Answer: ${userAnswer}
+
+Provide a fair, detailed, constructive evaluation including score (1-10), strengths, areas for improvement, STAR method analysis, and a top tip for improvement.`
+
+    const response = await ai.models.generateContent({
+        model: process.env.GEMINI_AI_MODEL,
+        contents: prompt,
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: zodToJsonSchema(answerEvaluationSchema),
+        }
+    })
+
+    return JSON.parse(response.text)
+}
+
+module.exports = { generateInterviewReport, generateResumePdf, evaluateUserAnswer }

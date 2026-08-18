@@ -1,8 +1,14 @@
-import { getAllInterviewReports, generateInterviewReport, getInterviewReportById, generateResumePdf } from "../services/interview.api"
+import {
+    getAllInterviewReports,
+    generateInterviewReport,
+    getInterviewReportById,
+    generateResumePdf,
+    toggleTaskCompletion,
+    evaluateAnswer
+} from "../services/interview.api"
 import { useContext, useEffect } from "react"
 import { InterviewContext } from "../interview.context"
 import { useParams } from "react-router"
-
 
 export const useInterview = () => {
 
@@ -78,6 +84,26 @@ export const useInterview = () => {
         }
     }
 
+    const toggleTask = async (day, taskIndex) => {
+        if (!interviewId) return
+        try {
+            const response = await toggleTaskCompletion({ interviewId, day, taskIndex })
+            setReport(prev => prev ? { ...prev, completedTasks: response.completedTasks } : prev)
+        } catch (error) {
+            console.log(error)
+        }
+    }
+
+    const submitAnswerForEvaluation = async ({ question, intention, modelAnswer, userAnswer, questionType }) => {
+        try {
+            const response = await evaluateAnswer({ question, intention, modelAnswer, userAnswer, questionType })
+            return response.evaluation
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    }
+
     useEffect(() => {
         if (interviewId) {
             getReportById(interviewId)
@@ -86,6 +112,16 @@ export const useInterview = () => {
         }
     }, [ interviewId ])
 
-    return { loading, report, reports, generateReport, getReportById, getReports, getResumePdf }
+    return {
+        loading,
+        report,
+        reports,
+        generateReport,
+        getReportById,
+        getReports,
+        getResumePdf,
+        toggleTask,
+        submitAnswerForEvaluation
+    }
 
 }
