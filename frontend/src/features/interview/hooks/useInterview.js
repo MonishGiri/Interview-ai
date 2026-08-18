@@ -6,15 +6,12 @@ import {
     toggleTaskCompletion,
     evaluateAnswer
 } from "../services/interview.api"
-import { useContext, useEffect } from "react"
+import { useContext } from "react"
 import { InterviewContext } from "../interview.context"
-import { useParams } from "react-router"
 import { useAuth } from "../../auth/hooks/useAuth"
 
 export const useInterview = () => {
-
     const context = useContext(InterviewContext)
-    const { interviewId } = useParams()
     const { user } = useAuth()
 
     if (!context) {
@@ -25,53 +22,51 @@ export const useInterview = () => {
 
     const generateReport = async ({ jobDescription, selfDescription, resumeFile }) => {
         setLoading(true)
-        let response = null
         try {
-            response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
+            const response = await generateInterviewReport({ jobDescription, selfDescription, resumeFile })
             if (response?.interviewReport) {
                 setReport(response.interviewReport)
             }
+            return response?.interviewReport || null
         } catch (error) {
             console.log(error)
+            return null
         } finally {
             setLoading(false)
         }
-
-        return response?.interviewReport || null
     }
 
     const getReportById = async (interviewId) => {
         setLoading(true)
-        let response = null
         try {
-            response = await getInterviewReportById(interviewId)
+            const response = await getInterviewReportById(interviewId)
             if (response?.interviewReport) {
                 setReport(response.interviewReport)
             }
+            return response?.interviewReport || null
         } catch (error) {
             console.log(error)
+            return null
         } finally {
             setLoading(false)
         }
-        return response?.interviewReport || null
     }
 
     const getReports = async () => {
         if (!user) return []
         setLoading(true)
-        let response = null
         try {
-            response = await getAllInterviewReports()
+            const response = await getAllInterviewReports()
             if (response?.interviewReports) {
                 setReports(response.interviewReports)
             }
+            return response?.interviewReports || []
         } catch (error) {
             console.log(error)
+            return []
         } finally {
             setLoading(false)
         }
-
-        return response?.interviewReports || []
     }
 
     const getResumePdf = async (interviewReportId) => {
@@ -87,15 +82,14 @@ export const useInterview = () => {
                 link.click()
                 document.body.removeChild(link)
             }
-        }
-        catch (error) {
+        } catch (error) {
             console.log(error)
         } finally {
             setLoading(false)
         }
     }
 
-    const toggleTask = async (day, taskIndex) => {
+    const toggleTask = async (interviewId, day, taskIndex) => {
         if (!interviewId) return
         try {
             const response = await toggleTaskCompletion({ interviewId, day, taskIndex })
@@ -117,14 +111,6 @@ export const useInterview = () => {
         }
     }
 
-    useEffect(() => {
-        if (interviewId) {
-            getReportById(interviewId)
-        } else if (user) {
-            getReports()
-        }
-    }, [ interviewId, user ])
-
     return {
         loading,
         report,
@@ -136,5 +122,4 @@ export const useInterview = () => {
         toggleTask,
         submitAnswerForEvaluation
     }
-
 }

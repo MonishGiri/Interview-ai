@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import "../style/home.scss"
 import { useInterview } from '../hooks/useInterview.js'
 import { useAuth } from '../../auth/hooks/useAuth.js'
@@ -7,9 +7,15 @@ import Navbar from '../../../components/Navbar'
 import LoadingScreen from '../../../components/LoadingScreen'
 
 const Home = () => {
-    const { loading, reports } = useInterview()
+    const { loading, reports, getReports } = useInterview()
     const { user } = useAuth()
     const navigate = useNavigate()
+
+    useEffect(() => {
+        if (user?._id) {
+            getReports()
+        }
+    }, [ user?._id ])
 
     if (loading) {
         return (
