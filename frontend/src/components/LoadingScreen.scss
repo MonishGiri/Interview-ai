@@ -1,9 +1,9 @@
-$bg-page: #0d1117;
-$bg-card: #161b22;
-$border-color: #2a3348;
-$text-primary: #e6edf3;
-$text-muted: #7d8590;
-$accent: #ff2d78;
+$bg-page: var(--color-bg);
+$bg-card: var(--color-surface);
+$border-color: var(--color-border);
+$text-primary: var(--color-text-primary);
+$text-muted: var(--color-text-muted);
+$accent: var(--color-accent);
 $accent-purple: #a78bfa;
 
 .loading-container {
@@ -46,18 +46,18 @@ $accent-purple: #a78bfa;
         width: 80px;
         height: 80px;
         border-top-color: $accent;
-        border-right-color: rgba($accent, 0.3);
+        border-right-color: rgba(255, 45, 120, 0.3);
         animation: spin-clockwise 1.2s linear infinite;
-        filter: drop-shadow(0 0 8px rgba($accent, 0.7));
+        filter: drop-shadow(0 0 8px rgba(255, 45, 120, 0.5));
     }
 
     &.ring-inner {
         width: 54px;
         height: 54px;
         border-bottom-color: $accent-purple;
-        border-left-color: rgba($accent-purple, 0.3);
+        border-left-color: rgba(167, 139, 250, 0.3);
         animation: spin-counterclockwise 0.9s linear infinite;
-        filter: drop-shadow(0 0 8px rgba($accent-purple, 0.7));
+        filter: drop-shadow(0 0 8px rgba(167, 139, 250, 0.5));
     }
 }
 
@@ -126,7 +126,7 @@ $accent-purple: #a78bfa;
 }
 
 .skeleton-line {
-    background: linear-gradient(90deg, #1c2230 25%, #2a3348 50%, #1c2230 75%);
+    background: linear-gradient(90deg, var(--color-panel) 25%, var(--color-border) 50%, var(--color-panel) 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s infinite;
     border-radius: 4px;

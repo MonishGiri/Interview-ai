@@ -1,0 +1,112 @@
+/* Print styles for Interview Strategy Export */
+
+@media print {
+    /* Hide interactive elements */
+    .interview-nav,
+    .interview-divider,
+    .interview-sidebar,
+    nav,
+    header.navbar,
+    .Navbar,
+    [class*="Navbar"],
+    [class*="navbar"],
+    .practice-drawer,
+    .q-card__practice-toggle,
+    .resume-download-overlay,
+    .print-exclude {
+        display: none !important;
+    }
+
+    /* Reset page layout for print */
+    body, html {
+        background: #ffffff !important;
+        color: #111 !important;
+        font-size: 12pt;
+    }
+
+    .page-wrapper,
+    .interview-page,
+    .interview-layout {
+        display: block !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        background: #ffffff !important;
+        box-shadow: none !important;
+    }
+
+    .interview-content {
+        width: 100% !important;
+        padding: 0 !important;
+    }
+
+    /* Make all question cards expand */
+    .q-card__body {
+        display: flex !important;
+    }
+
+    /* Ensure question cards print cleanly */
+    .q-card {
+        border: 1px solid #ddd !important;
+        border-radius: 4pt !important;
+        margin-bottom: 10pt !important;
+        page-break-inside: avoid;
+        background: #ffffff !important;
+        box-shadow: none !important;
+        opacity: 1 !important;
+        animation: none !important;
+    }
+
+    .q-card__question {
+        color: #111 !important;
+    }
+
+    .q-card__section p,
+    .q-card__tag {
+        color: #333 !important;
+    }
+
+    /* Content header */
+    .content-header h2 {
+        color: #111 !important;
+        border-bottom: 1pt solid #e0034d !important;
+        padding-bottom: 4pt !important;
+        margin-bottom: 10pt !important;
+    }
+
+    /* Section page breaks */
+    section {
+        page-break-before: always;
+
+        &:first-of-type {
+            page-break-before: avoid;
+        }
+    }
+
+    /* Print title block */
+    .interview-layout::before {
+        content: "Interview Strategy Report — Powered by InterviewAI";
+        display: block;
+        font-size: 9pt;
+        color: #888;
+        border-bottom: 1pt solid #ddd;
+        padding-bottom: 6pt;
+        margin-bottom: 16pt;
+    }
+
+    /* Roadmap */
+    .roadmap-day {
+        border: 1px solid #ddd !important;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+        margin-bottom: 8pt !important;
+    }
+
+    /* Score ring — flatten for print */
+    .match-score__ring {
+        border: 2pt solid #e0034d !important;
+        box-shadow: none !important;
+    }
+}

@@ -114,6 +114,7 @@ export const useInterview = () => {
     return {
         loading,
         report,
+        setReport,
         reports,
         generateReport,
         getReportById,

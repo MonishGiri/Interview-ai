@@ -95,3 +95,55 @@ export const evaluateAnswer = async ({ question, intention, modelAnswer, userAns
         throw error
     }
 }
+
+/**
+ * @description Generate a public share link token for a report.
+ */
+export const generateShareLink = async (interviewId) => {
+    try {
+        const response = await api.post(`/api/interview/share/${interviewId}`)
+        return response.data
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+}
+
+/**
+ * @description Revoke the public share link for a report.
+ */
+export const revokeShareLink = async (interviewId) => {
+    try {
+        const response = await api.delete(`/api/interview/share/${interviewId}`)
+        return response.data
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+}
+
+/**
+ * @description Public endpoint — fetch a shared report by shareToken (no auth required).
+ */
+export const getSharedReport = async (shareToken) => {
+    try {
+        const response = await api.get(`/api/interview/shared/${shareToken}`)
+        return response.data
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+}
+
+/**
+ * @description Regenerate a specific section of a report using AI.
+ */
+export const regenerateReportSection = async ({ interviewId, section }) => {
+    try {
+        const response = await api.patch(`/api/interview/regenerate/${interviewId}`, { section })
+        return response.data
+    } catch (error) {
+        console.log(error)
+        throw error
+    }
+}

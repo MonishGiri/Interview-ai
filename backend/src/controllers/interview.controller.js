@@ -1,6 +1,7 @@
 const pdfParse = require("pdf-parse")
 const mammoth = require("mammoth")
-const { generateInterviewReport, generateResumePdf, evaluateUserAnswer } = require("../services/ai.service")
+const crypto = require("crypto")
+const { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection } = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
 const asyncHandler = require("../middlewares/asyncHandler")
 
@@ -99,7 +100,6 @@ const generateResumePdfController = asyncHandler(async (req, res) => {
 
     const { resume, jobDescription, selfDescription, user: userId } = interviewReport
 
-    // Retrieve user details to ensure the resume is generated with correct candidate name and email
     const userModel = require("../models/user.model")
     const user = await userModel.findById(userId)
     const candidateName = user ? user.username : "Candidate"
@@ -180,11 +180,104 @@ const evaluateAnswerController = asyncHandler(async (req, res) => {
     })
 })
 
+/**
+ * @description Generate a public share link token for a report.
+ */
+const generateShareLinkController = asyncHandler(async (req, res) => {
+    const { interviewId } = req.params
+
+    const report = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id })
+    if (!report) return res.status(404).json({ message: "Report not found." })
+
+    if (!report.shareToken) {
+        report.shareToken = crypto.randomUUID()
+    }
+    report.isShared = true
+    await report.save()
+
+    res.status(200).json({
+        message: "Share link generated.",
+        shareToken: report.shareToken,
+        isShared: report.isShared
+    })
+})
+
+/**
+ * @description Revoke the public share link for a report.
+ */
+const revokeShareLinkController = asyncHandler(async (req, res) => {
+    const { interviewId } = req.params
+
+    const report = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id })
+    if (!report) return res.status(404).json({ message: "Report not found." })
+
+    report.isShared = false
+    report.shareToken = null
+    await report.save()
+
+    res.status(200).json({ message: "Share link revoked." })
+})
+
+/**
+ * @description Public endpoint — fetch a shared report by its shareToken (no auth required).
+ */
+const getSharedReportController = asyncHandler(async (req, res) => {
+    const { shareToken } = req.params
+
+    const report = await interviewReportModel
+        .findOne({ shareToken, isShared: true })
+        .select("-resume -selfDescription -jobDescription -__v -user -shareToken")
+
+    if (!report) {
+        return res.status(404).json({ message: "Shared report not found or link has been revoked." })
+    }
+
+    res.status(200).json({
+        message: "Shared report fetched successfully.",
+        interviewReport: report
+    })
+})
+
+/**
+ * @description Regenerate a specific section of a report using AI.
+ */
+const regenerateSectionController = asyncHandler(async (req, res) => {
+    const { interviewId } = req.params
+    const { section } = req.body
+
+    const allowedSections = ["technicalQuestions", "behavioralQuestions", "preparationPlan"]
+    if (!allowedSections.includes(section)) {
+        return res.status(400).json({ message: `Invalid section. Must be one of: ${allowedSections.join(", ")}` })
+    }
+
+    const report = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id })
+    if (!report) return res.status(404).json({ message: "Report not found." })
+
+    const regenerated = await regenerateSection({
+        section,
+        resume: report.resume || "",
+        selfDescription: report.selfDescription || "",
+        jobDescription: report.jobDescription || ""
+    })
+
+    report[section] = regenerated[section]
+    await report.save()
+
+    res.status(200).json({
+        message: `${section} regenerated successfully.`,
+        [section]: report[section]
+    })
+})
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
     getAllInterviewReportsController,
     generateResumePdfController,
     toggleTaskCompletionController,
-    evaluateAnswerController
+    evaluateAnswerController,
+    generateShareLinkController,
+    revokeShareLinkController,
+    getSharedReportController,
+    regenerateSectionController
 }

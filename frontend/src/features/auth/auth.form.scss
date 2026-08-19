@@ -1,10 +1,10 @@
-$bg-page: #0d1117;
-$bg-card: #161b22;
-$bg-input: #1e2535;
-$border-color: #2a3348;
-$text-primary: #e6edf3;
-$text-muted: #7d8590;
-$accent: #ff2d78;
+$bg-page: var(--color-bg);
+$bg-card: var(--color-surface);
+$bg-input: var(--color-panel);
+$border-color: var(--color-border);
+$text-primary: var(--color-text-primary);
+$text-muted: var(--color-text-muted);
+$accent: var(--color-accent);
 
 .auth-page {
     min-height: calc(100vh - 70px);
@@ -22,7 +22,7 @@ $accent: #ff2d78;
         border: 1px solid $border-color;
         border-radius: 1rem;
         padding: 2.5rem 2rem;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        box-shadow: var(--shadow-card);
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
@@ -73,7 +73,7 @@ $accent: #ff2d78;
 
             &:focus {
                 border-color: $accent;
-                box-shadow: 0 0 0 2px rgba($accent, 0.2), 0 0 10px rgba($accent, 0.1);
+                box-shadow: 0 0 0 2px rgba(255, 45, 120, 0.2);
             }
 
             &::placeholder {
@@ -97,7 +97,7 @@ $accent: #ff2d78;
         &:hover {
             opacity: 0.95;
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba($accent, 0.3), 0 0 8px rgba($accent, 0.15);
+            box-shadow: 0 4px 15px rgba(255, 45, 120, 0.3);
         }
 
         &:active {

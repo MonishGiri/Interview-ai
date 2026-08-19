@@ -6,6 +6,7 @@ import Home from "./features/interview/pages/Home";
 import Generator from "./features/interview/pages/Generator";
 import Interview from "./features/interview/pages/Interview";
 import Reports from "./features/interview/pages/Reports";
+import SharedReport from "./features/interview/pages/SharedReport";
 
 export const router = createBrowserRouter([
     {
@@ -31,5 +32,9 @@ export const router = createBrowserRouter([
     {
         path: "/interview/:interviewId",
         element: <Protected><Interview /></Protected>
+    },
+    {
+        path: "/shared/:shareToken",
+        element: <SharedReport />
     }
 ])

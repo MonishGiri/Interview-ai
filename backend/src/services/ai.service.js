@@ -13,12 +13,14 @@ const interviewReportSchema = z.object({
     technicalQuestions: z.array(z.object({
         question: z.string().describe("The technical question can be asked in the interview"),
         intention: z.string().describe("The intention of interviewer behind asking this question"),
-        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc."),
+        difficulty: z.enum(["easy", "medium", "hard"]).describe("The difficulty level of this question: easy for basic/foundational, medium for intermediate, hard for advanced/senior-level")
     })).describe("Technical questions that can be asked in the interview along with their intention and how to answer them"),
     behavioralQuestions: z.array(z.object({
-        question: z.string().describe("The technical question can be asked in the interview"),
+        question: z.string().describe("The behavioral question can be asked in the interview"),
         intention: z.string().describe("The intention of interviewer behind asking this question"),
-        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc.")
+        answer: z.string().describe("How to answer this question, what points to cover, what approach to take etc."),
+        difficulty: z.enum(["easy", "medium", "hard"]).describe("The difficulty level of this question: easy for common/standard, medium for situational, hard for leadership/complex scenarios")
     })).describe("Behavioral questions that can be asked in the interview along with their intention and how to answer them"),
     skillGaps: z.array(z.object({
         skill: z.string().describe("The skill which the candidate is lacking"),
@@ -42,7 +44,7 @@ async function generateInterviewReport({ resume, selfDescription, jobDescription
 `
 
     const response = await ai.models.generateContent({
-        model: process.env.GEMINI_AI_MODEL,
+        model: process.env.GEMINI_AI_MODEL || "gemini-3.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -176,7 +178,7 @@ async function generateResumePdf({ resume, selfDescription, jobDescription }) {
                     `
 
     const response = await ai.models.generateContent({
-        model: process.env.GEMINI_AI_MODEL,
+        model: process.env.GEMINI_AI_MODEL || "gemini-3.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -217,7 +219,7 @@ Candidate's Answer: ${userAnswer}
 Provide a fair, detailed, constructive evaluation including score (1-10), strengths, areas for improvement, STAR method analysis, and a top tip for improvement.`
 
     const response = await ai.models.generateContent({
-        model: process.env.GEMINI_AI_MODEL,
+        model: process.env.GEMINI_AI_MODEL || "gemini-3.5-flash",
         contents: prompt,
         config: {
             responseMimeType: "application/json",
@@ -228,4 +230,59 @@ Provide a fair, detailed, constructive evaluation including score (1-10), streng
     return JSON.parse(response.text)
 }
 
-module.exports = { generateInterviewReport, generateResumePdf, evaluateUserAnswer }
+const sectionSchemas = {
+    technicalQuestions: z.object({
+        technicalQuestions: z.array(z.object({
+            question: z.string(),
+            intention: z.string(),
+            answer: z.string(),
+            difficulty: z.enum(["easy", "medium", "hard"])
+        }))
+    }),
+    behavioralQuestions: z.object({
+        behavioralQuestions: z.array(z.object({
+            question: z.string(),
+            intention: z.string(),
+            answer: z.string(),
+            difficulty: z.enum(["easy", "medium", "hard"])
+        }))
+    }),
+    preparationPlan: z.object({
+        preparationPlan: z.array(z.object({
+            day: z.number(),
+            focus: z.string(),
+            tasks: z.array(z.string())
+        }))
+    })
+}
+
+const sectionPrompts = {
+    technicalQuestions: ({ resume, selfDescription, jobDescription }) =>
+        `Generate a fresh set of technical interview questions for the following candidate and job. Make them different from previous questions, cover a variety of topics and difficulty levels.\n\nJob Description: ${jobDescription}\nResume: ${resume}\nSelf Description: ${selfDescription}`,
+    behavioralQuestions: ({ resume, selfDescription, jobDescription }) =>
+        `Generate a fresh set of behavioral interview questions for the following candidate and job. Make them different from previous questions, focus on STAR-method scenarios.\n\nJob Description: ${jobDescription}\nResume: ${resume}\nSelf Description: ${selfDescription}`,
+    preparationPlan: ({ resume, selfDescription, jobDescription }) =>
+        `Generate a fresh day-by-day preparation plan for the following candidate targeting this job. Create a realistic, actionable plan different from the previous one.\n\nJob Description: ${jobDescription}\nResume: ${resume}\nSelf Description: ${selfDescription}`
+}
+
+async function regenerateSection({ section, resume, selfDescription, jobDescription }) {
+    const schema = sectionSchemas[section]
+    const promptFn = sectionPrompts[section]
+
+    if (!schema || !promptFn) {
+        throw new Error(`Unknown section: ${section}`)
+    }
+
+    const response = await ai.models.generateContent({
+        model: process.env.GEMINI_AI_MODEL || "gemini-3.5-flash",
+        contents: promptFn({ resume, selfDescription, jobDescription }),
+        config: {
+            responseMimeType: "application/json",
+            responseSchema: zodToJsonSchema(schema),
+        }
+    })
+
+    return JSON.parse(response.text)
+}
+
+module.exports = { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection }

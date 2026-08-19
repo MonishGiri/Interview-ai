@@ -1,17 +1,17 @@
 // ── Variables ────────────────────────────────────────────────────────────────
-$bg-page:        #0d1117;
-$bg-card:        #161b22;
-$bg-panel:       #1c2230;
-$bg-input:       #1e2535;
-$border-color:   #2a3348;
-$text-primary:   #e6edf3;
-$text-muted:     #7d8590;
-$accent:         #ff2d78;
+$bg-page:        var(--color-bg);
+$bg-card:        var(--color-surface);
+$bg-panel:       var(--color-panel);
+$bg-input:       var(--color-panel);
+$border-color:   var(--color-border);
+$text-primary:   var(--color-text-primary);
+$text-muted:     var(--color-text-muted);
+$accent:         var(--color-accent);
 $accent-alt:     #ff6b9d;
-$badge-required: #ff2d78;
-$badge-best:     #ff2d78;
-$info-bg:        #1b2a4a;
-$info-border:    #2d4a7a;
+$badge-required: var(--color-accent);
+$badge-best:     var(--color-accent);
+$info-bg:        var(--color-panel);
+$info-border:    var(--color-border);
 $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
 // ── Page Shell ───────────────────────────────────────────────────────────────
@@ -79,7 +79,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 
     .hero-description {
         font-size: clamp(0.9rem, 2.5vw, 1rem);
-        color: lighten($text-muted, 10%);
+        color: $text-muted;
         max-width: 680px;
         line-height: 1.6;
         margin: 0 0 0.5rem 0;
@@ -512,7 +512,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     align-items: center;
     gap: 0.5rem;
     padding: 0.75rem 1.5rem;
-    background: linear-gradient(135deg, $accent 0%, darken($accent, 10%) 100%);
+    background: linear-gradient(135deg, $accent 0%, #d20d3b 100%);
     color: #fff;
     font-size: 0.9rem;
     font-weight: 600;
@@ -627,7 +627,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 
     p {
-        color: lighten($text-muted, 10%);
+        color: $text-muted;
         font-size: 0.95rem;
         line-height: 1.5;
         margin: 0;
@@ -769,7 +769,7 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
     }
 
     p {
-        color: lighten($text-muted, 10%);
+        color: $text-muted;
         font-size: 1rem;
         max-width: 550px;
         margin: 0 0 0.5rem 0;
@@ -798,6 +798,6 @@ $font-stack:     system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Robot
 
     span {
         font-size: 0.75rem;
-        color: darken($text-muted, 15%);
+        color: $text-muted;
     }
 }

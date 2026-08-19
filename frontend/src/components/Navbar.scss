@@ -1,18 +1,14 @@
-$bg-navbar: #161b22;
-$bg-dropdown: #1c2230;
-$border-color: #2a3348;
-$text-primary: #e6edf3;
-$text-muted: #7d8590;
-$accent: #ff2d78;
+/* --- Navbar Theme-Aware Styling --- */
 
 .main-navbar {
     width: 100%;
-    background-color: $bg-navbar;
-    border-bottom: 1px solid $border-color;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
     position: sticky;
     top: 0;
     z-index: 100;
     box-sizing: border-box;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .navbar-container {
@@ -35,7 +31,7 @@ $accent: #ff2d78;
         width: 34px;
         height: 34px;
         border-radius: 0.5rem;
-        background: linear-gradient(135deg, $accent, #a78bfa);
+        background: linear-gradient(135deg, var(--color-accent), #a78bfa);
         color: #fff;
         display: flex;
         align-items: center;
@@ -45,11 +41,11 @@ $accent: #ff2d78;
     .brand-name {
         font-size: 1.15rem;
         font-weight: 700;
-        color: $text-primary;
+        color: var(--color-text-primary);
     }
 
     .brand-highlight {
-        color: $accent;
+        color: var(--color-accent);
     }
 }
 
@@ -59,7 +55,7 @@ $accent: #ff2d78;
     gap: 1.75rem;
 
     .nav-link {
-        color: $text-muted;
+        color: var(--color-text-muted);
         text-decoration: none;
         font-size: 0.875rem;
         font-weight: 500;
@@ -69,20 +65,20 @@ $accent: #ff2d78;
         border: none;
 
         &:hover {
-            color: $text-primary;
+            color: var(--color-text-primary);
         }
 
         &--btn {
-            background-color: rgba($accent, 0.12);
-            color: $accent;
-            border: 1px solid rgba($accent, 0.3);
+            background-color: rgba(255, 45, 120, 0.12);
+            color: var(--color-accent);
+            border: 1px solid rgba(255, 45, 120, 0.3);
             padding: 0.35rem 0.85rem;
             border-radius: 2rem;
             font-weight: 700;
 
             &:hover {
-                background-color: rgba($accent, 0.22);
-                color: $accent;
+                background-color: rgba(255, 45, 120, 0.22);
+                color: var(--color-accent);
             }
         }
     }
@@ -96,15 +92,15 @@ $accent: #ff2d78;
     display: flex;
     align-items: center;
     gap: 0.6rem;
-    background-color: $bg-dropdown;
-    border: 1px solid $border-color;
+    background-color: var(--color-panel);
+    border: 1px solid var(--color-border);
     padding: 0.35rem 0.75rem 0.35rem 0.4rem;
     border-radius: 2rem;
     cursor: pointer;
-    color: $text-primary;
+    color: var(--color-text-primary);
 
     &:hover {
-        border-color: lighten($border-color, 10%);
+        border-color: var(--color-accent);
     }
 }
 
@@ -112,7 +108,7 @@ $accent: #ff2d78;
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: linear-gradient(135deg, #a78bfa, $accent);
+    background: linear-gradient(135deg, #a78bfa, var(--color-accent));
     color: #ffffff;
     font-weight: 700;
     font-size: 0.8rem;
@@ -127,12 +123,12 @@ $accent: #ff2d78;
 }
 
 .chevron {
-    color: $text-muted;
+    color: var(--color-text-muted);
     transition: transform 0.2s;
 
     &--open {
         transform: rotate(180deg);
-        color: $accent;
+        color: var(--color-accent);
     }
 }
 
@@ -141,10 +137,10 @@ $accent: #ff2d78;
     right: 0;
     top: calc(100% + 0.5rem);
     width: 220px;
-    background-color: $bg-dropdown;
-    border: 1px solid $border-color;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
     border-radius: 0.6rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
     padding: 0.5rem 0;
     display: flex;
     flex-direction: column;
@@ -158,19 +154,19 @@ $accent: #ff2d78;
         margin: 0;
         font-size: 0.875rem;
         font-weight: 700;
-        color: $text-primary;
+        color: var(--color-text-primary);
     }
 
     .dropdown-email {
         margin: 0.15rem 0 0 0;
         font-size: 0.75rem;
-        color: $text-muted;
+        color: var(--color-text-muted);
     }
 }
 
 .dropdown-divider {
     height: 1px;
-    background-color: $border-color;
+    background-color: var(--color-border);
     margin: 0.4rem 0;
 }
 
@@ -179,7 +175,7 @@ $accent: #ff2d78;
     align-items: center;
     gap: 0.6rem;
     padding: 0.6rem 1rem;
-    color: $text-primary;
+    color: var(--color-text-primary);
     font-size: 0.825rem;
     text-decoration: none;
     background: none;
@@ -190,7 +186,7 @@ $accent: #ff2d78;
     transition: background-color 0.15s;
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--color-panel);
     }
 
     &.logout-item {
@@ -201,7 +197,7 @@ $accent: #ff2d78;
         }
 
         &:hover {
-            background-color: rgba(#ff4d4d, 0.1);
+            background-color: rgba(255, 77, 77, 0.1);
         }
     }
 }
@@ -212,18 +208,18 @@ $accent: #ff2d78;
     gap: 1rem;
 
     .login-link {
-        color: $text-primary;
+        color: var(--color-text-primary);
         text-decoration: none;
         font-size: 0.875rem;
         font-weight: 600;
 
         &:hover {
-            color: $accent;
+            color: var(--color-accent);
         }
     }
 
     .register-btn {
-        background: linear-gradient(135deg, $accent, #a78bfa);
+        background: linear-gradient(135deg, var(--color-accent), #a78bfa);
         color: #ffffff;
         text-decoration: none;
         padding: 0.45rem 1.1rem;
@@ -239,13 +235,32 @@ $accent: #ff2d78;
     }
 }
 
+.theme-toggle-btn {
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.45rem 0.55rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+
+    &:hover {
+        color: var(--color-text-primary);
+        background-color: var(--color-panel);
+        border-color: var(--color-border);
+    }
+}
+
 /* --- Mobile Menu and Responsive styles --- */
 
 .mobile-menu-btn {
     display: none;
     background: none;
     border: none;
-    color: $text-primary;
+    color: var(--color-text-primary);
     cursor: pointer;
     padding: 0.5rem;
     align-items: center;
@@ -254,7 +269,7 @@ $accent: #ff2d78;
     transition: background-color 0.2s;
 
     &:hover {
-        background-color: rgba(255, 255, 255, 0.05);
+        background-color: var(--color-panel);
     }
 }
 
@@ -263,7 +278,9 @@ $accent: #ff2d78;
 }
 
 .desktop-only-auth {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
 }
 
 @media (max-width: 768px) {
@@ -280,10 +297,10 @@ $accent: #ff2d78;
         top: 100%;
         left: 0;
         width: 100%;
-        background-color: rgba($bg-dropdown, 0.98);
+        background-color: var(--color-surface);
         backdrop-filter: blur(16px);
         -webkit-backdrop-filter: blur(16px);
-        border-bottom: 1px solid $border-color;
+        border-bottom: 1px solid var(--color-border);
         padding: 1.5rem;
         box-sizing: border-box;
         flex-direction: column;
@@ -304,7 +321,7 @@ $accent: #ff2d78;
         .nav-link {
             font-size: 0.95rem;
             padding: 0.6rem 0;
-            border-bottom: 1px solid rgba($border-color, 0.3);
+            border-bottom: 1px solid var(--color-border);
             width: 100%;
             display: block;
 
@@ -321,7 +338,7 @@ $accent: #ff2d78;
     .mobile-only-auth {
         display: block;
         margin-top: 0.5rem;
-        border-top: 1px solid rgba($border-color, 0.6);
+        border-top: 1px solid var(--color-border);
         padding-top: 1rem;
 
         .mobile-profile-options {
@@ -351,35 +368,35 @@ $accent: #ff2d78;
             .mobile-username {
                 font-size: 0.9rem;
                 font-weight: 700;
-                color: $text-primary;
+                color: var(--color-text-primary);
                 margin: 0;
             }
 
             .mobile-email {
                 font-size: 0.75rem;
-                color: $text-muted;
+                color: var(--color-text-muted);
                 margin: 0;
             }
         }
 
         .mobile-dropdown-link {
             font-size: 0.9rem;
-            color: $text-primary;
+            color: var(--color-text-primary);
             text-decoration: none;
             padding: 0.5rem 0;
-            border-bottom: 1px solid rgba($border-color, 0.3);
+            border-bottom: 1px solid var(--color-border);
             display: block;
             font-weight: 500;
 
             &:hover {
-                color: $accent;
+                color: var(--color-accent);
             }
         }
 
         .mobile-logout-btn {
-            background-color: rgba(#ff4d4d, 0.1);
+            background-color: rgba(255, 77, 77, 0.1);
             color: #ff4d4d;
-            border: 1px solid rgba(#ff4d4d, 0.25);
+            border: 1px solid rgba(255, 77, 77, 0.25);
             border-radius: 2rem;
             padding: 0.6rem;
             font-weight: 700;
@@ -391,7 +408,7 @@ $accent: #ff2d78;
             transition: background-color 0.2s;
 
             &:hover {
-                background-color: rgba(#ff4d4d, 0.18);
+                background-color: rgba(255, 77, 77, 0.18);
             }
         }
 
@@ -401,23 +418,23 @@ $accent: #ff2d78;
             gap: 0.75rem;
 
             .mobile-login-link {
-                color: $text-primary;
+                color: var(--color-text-primary);
                 text-decoration: none;
                 font-size: 0.9rem;
                 font-weight: 600;
                 text-align: center;
                 padding: 0.6rem;
-                border: 1px solid $border-color;
+                border: 1px solid var(--color-border);
                 border-radius: 2rem;
 
                 &:hover {
-                    color: $accent;
-                    border-color: $accent;
+                    color: var(--color-accent);
+                    border-color: var(--color-accent);
                 }
             }
 
             .mobile-register-btn {
-                background: linear-gradient(135deg, $accent, #a78bfa);
+                background: linear-gradient(135deg, var(--color-accent), #a78bfa);
                 color: #ffffff;
                 text-decoration: none;
                 padding: 0.6rem;
@@ -425,7 +442,7 @@ $accent: #ff2d78;
                 font-size: 0.9rem;
                 font-weight: 700;
                 text-align: center;
-                box-shadow: 0 4px 15px rgba($accent, 0.25);
+                box-shadow: 0 4px 15px rgba(255, 45, 120, 0.25);
             }
         }
     }
