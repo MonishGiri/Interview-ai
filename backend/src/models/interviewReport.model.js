@@ -114,13 +114,13 @@ const interviewReportSchema = new mongoose.Schema({
     },
     title: {
         type: String,
-        required: [ true, "Job title is required" ]
+        required: [ true, "Job title is required" ],
+        default: "Interview Strategy Report"
     },
     shareToken: {
         type: String,
         unique: true,
-        sparse: true,
-        default: null
+        sparse: true
     },
     isShared: {
         type: Boolean,

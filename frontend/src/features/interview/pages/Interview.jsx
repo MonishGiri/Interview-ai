@@ -287,6 +287,17 @@ const Interview = () => {
         }
     }, [ interviewId ])
 
+    useEffect(() => {
+        if (report) {
+            setShareState(s => ({
+                ...s,
+                token: report.shareToken || null,
+                isShared: !!report.isShared,
+                url: report.shareToken ? `${window.location.origin}/shared/${report.shareToken}` : s.url
+            }))
+        }
+    }, [ report ])
+
     if (loading && !report) {
         return (
             <>
@@ -310,11 +321,17 @@ const Interview = () => {
     const progressPct = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0
 
     const handleShare = async () => {
+        if (shareState.isShared && shareState.token) {
+            const url = `${window.location.origin}/shared/${shareState.token}`
+            setShareState(s => ({ ...s, showModal: true, url }))
+            return
+        }
         setShareState(s => ({ ...s, loading: true }))
         const data = await generateShareLink(interviewId)
         if (data?.shareToken) {
             const url = `${window.location.origin}/shared/${data.shareToken}`
             setShareState({ loading: false, token: data.shareToken, isShared: true, showModal: true, url })
+            setReport(r => r ? { ...r, shareToken: data.shareToken, isShared: true } : r)
         } else {
             setShareState(s => ({ ...s, loading: false }))
         }
@@ -340,6 +357,7 @@ const Interview = () => {
     const handleRevoke = async () => {
         await revokeShareLink(interviewId)
         setShareState({ loading: false, token: null, isShared: false, showModal: false, url: null })
+        setReport(r => r ? { ...r, shareToken: null, isShared: false } : r)
     }
 
     const handleRegenerate = async (section) => {

@@ -192,6 +192,9 @@ const generateShareLinkController = asyncHandler(async (req, res) => {
     if (!report.shareToken) {
         report.shareToken = crypto.randomUUID()
     }
+    if (!report.title) {
+        report.title = "Interview Strategy Report"
+    }
     report.isShared = true
     await report.save()
 
@@ -212,7 +215,10 @@ const revokeShareLinkController = asyncHandler(async (req, res) => {
     if (!report) return res.status(404).json({ message: "Report not found." })
 
     report.isShared = false
-    report.shareToken = null
+    report.shareToken = undefined
+    if (!report.title) {
+        report.title = "Interview Strategy Report"
+    }
     await report.save()
 
     res.status(200).json({ message: "Share link revoked." })
