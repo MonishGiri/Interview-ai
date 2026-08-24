@@ -1,4 +1,10 @@
+import axios from "axios";
 import api from "../../../services/api.client";
+
+const PUBLIC_API_BASE = import.meta.env.VITE_API_URL ||
+    (import.meta.env.MODE === 'production'
+        ? 'https://interview-ai-xqd6.onrender.com'
+        : 'http://localhost:3000')
 
 /**
  * @description Service to generate interview report based on user self description, resume and job description.
@@ -127,7 +133,7 @@ export const revokeShareLink = async (interviewId) => {
  */
 export const getSharedReport = async (shareToken) => {
     try {
-        const response = await api.get(`/api/interview/shared/${shareToken}`)
+        const response = await axios.get(`${PUBLIC_API_BASE}/api/interview/shared/${shareToken}`)
         return response.data
     } catch (error) {
         console.log(error)
