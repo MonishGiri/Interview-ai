@@ -16,7 +16,7 @@ services:
     name: interview-ai-backend
     env: node
     rootDir: backend
-    buildCommand: npm install
+    buildCommand: npm install && npx puppeteer browsers install chrome
     startCommand: node server.js
     envVars:
       - key: NODE_ENV

@@ -1,7 +1,7 @@
 /* Print styles for Interview Strategy Export */
 
 @media print {
-    /* Hide interactive elements */
+    /* Hide interactive elements, navigation & buttons */
     .interview-nav,
     .interview-divider,
     .interview-sidebar,
@@ -13,20 +13,31 @@
     .practice-drawer,
     .q-card__practice-toggle,
     .resume-download-overlay,
-    .print-exclude {
+    .share-modal-overlay,
+    .print-exclude,
+    .bookmark-btn,
+    .q-card__chevron,
+    .difficulty-filter,
+    .regen-btn,
+    .practice-btn,
+    .submit-eval-btn,
+    .shared-nav {
         display: none !important;
     }
 
-    /* Reset page layout for print */
     body, html {
         background: #ffffff !important;
-        color: #111 !important;
-        font-size: 12pt;
+        color: #0f172a !important;
+        font-size: 11pt !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     .page-wrapper,
     .interview-page,
-    .interview-layout {
+    .interview-layout,
+    .shared-page,
+    .shared-layout {
         display: block !important;
         width: 100% !important;
         max-width: 100% !important;
@@ -37,76 +48,105 @@
         box-shadow: none !important;
     }
 
-    .interview-content {
+    .interview-content,
+    .shared-content {
         width: 100% !important;
         padding: 0 !important;
     }
 
-    /* Make all question cards expand */
-    .q-card__body {
-        display: flex !important;
+    /* Document Print Cover Header */
+    .print-document-header {
+        display: block !important;
+        margin-bottom: 24pt;
+        padding-bottom: 12pt;
+        border-bottom: 2pt solid #4f46e5;
     }
 
-    /* Ensure question cards print cleanly */
-    .q-card {
-        border: 1px solid #ddd !important;
-        border-radius: 4pt !important;
+    .print-document-header h1 {
+        font-size: 20pt !important;
+        color: #0f172a !important;
+        margin-bottom: 4pt !important;
+    }
+
+    .print-document-header p {
+        font-size: 10pt !important;
+        color: #64748b !important;
+    }
+
+    .print-document-meta {
+        display: flex;
+        gap: 16pt;
+        margin-top: 8pt;
+        font-size: 10pt;
+        font-weight: 600;
+    }
+
+    /* Print Section Breaks */
+    .print-section {
+        page-break-before: always;
+        margin-top: 20pt;
+    }
+
+    .print-section:first-of-type {
+        page-break-before: avoid;
+        margin-top: 0;
+    }
+
+    .content-header h2,
+    .shared-section-header h2 {
+        font-size: 16pt !important;
+        color: #0f172a !important;
+        border-bottom: 1.5pt solid #6366f1 !important;
+        padding-bottom: 4pt !important;
+        margin-bottom: 12pt !important;
+    }
+
+    /* Question Cards */
+    .q-card,
+    .shared-q-card {
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
         margin-bottom: 10pt !important;
         page-break-inside: avoid;
         background: #ffffff !important;
         box-shadow: none !important;
+    }
+
+    .q-card__body,
+    .shared-q-card__body {
+        display: block !important;
         opacity: 1 !important;
-        animation: none !important;
+        padding: 10pt !important;
+        border-top: 1px solid #e2e8f0 !important;
     }
 
-    .q-card__question {
-        color: #111 !important;
-    }
-
-    .q-card__section p,
-    .q-card__tag {
-        color: #333 !important;
-    }
-
-    /* Content header */
-    .content-header h2 {
-        color: #111 !important;
-        border-bottom: 1pt solid #e0034d !important;
-        padding-bottom: 4pt !important;
-        margin-bottom: 10pt !important;
-    }
-
-    /* Section page breaks */
-    section {
-        page-break-before: always;
-
-        &:first-of-type {
-            page-break-before: avoid;
-        }
-    }
-
-    /* Print title block */
-    .interview-layout::before {
-        content: "Interview Strategy Report — Powered by InterviewAI";
-        display: block;
-        font-size: 9pt;
-        color: #888;
-        border-bottom: 1pt solid #ddd;
-        padding-bottom: 6pt;
-        margin-bottom: 16pt;
-    }
-
-    /* Roadmap */
-    .roadmap-day {
-        border: 1px solid #ddd !important;
-        background: #ffffff !important;
-        page-break-inside: avoid;
+    .q-card__section,
+    .shared-q-section {
         margin-bottom: 8pt !important;
     }
 
-    /* Score ring — flatten for print */
-    .match-score__ring {
-        border: 2pt solid #e0034d !important;
-        box-shadow: none !important;
+    .q-card__tag,
+    .shared-q-tag {
+        font-weight: 700 !important;
+        display: inline-block !important;
+        margin-bottom: 3pt !important;
+        color: #4f46e5 !important;
+    }
+
+    /* Preparation Roadmap */
+    .roadmap-day,
+    .shared-roadmap-day {
+        border: 1px solid #cbd5e1 !important;
+        background: #ffffff !important;
+        page-break-inside: avoid;
+        margin-bottom: 8pt !important;
+        padding: 8pt !important;
+        border-radius: 6px !important;
+    }
+
+    .task-item--completed {
+        text-decoration: line-through;
+        color: #64748b;
     }
 }
+

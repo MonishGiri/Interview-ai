@@ -16,7 +16,7 @@ const NAV_ITEMS = [
 ]
 
 // ── Sub-components ────────────────────────────────────────────────────────────
-const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, isBookmarked, onToggleBookmark }) => {
+const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, isBookmarked, onToggleBookmark, forceOpen = false }) => {
     const [ open, setOpen ] = useState(false)
     const [ practiceMode, setPracticeMode ] = useState(false)
     const [ userAnswer, setUserAnswer ] = useState('')
@@ -92,6 +92,8 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
         }
     }
 
+    const isOpen = open || forceOpen
+
     return (
         <div className='q-card'>
             <div className='q-card__header' onClick={() => setOpen(o => !o)}>
@@ -108,11 +110,11 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill={isBookmarked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
                 </button>
-                <span className={`q-card__chevron ${open ? 'q-card__chevron--open' : ''}`}>
+                <span className={`q-card__chevron ${isOpen ? 'q-card__chevron--open' : ''}`}>
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9" /></svg>
                 </span>
             </div>
-            {open && (
+            {isOpen && (
                 <div className='q-card__body animate-fade-down' style={{ animationDuration: '0.3s' }}>
                     <div className='q-card__section'>
                         <span className='q-card__tag q-card__tag--intention'>Intention</span>
@@ -124,7 +126,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                     </div>
 
                     {/* ── Mock Interview Practice Section ── */}
-                    <div className='q-card__practice-toggle'>
+                    <div className='q-card__practice-toggle print-exclude'>
                         <button
                             type="button"
                             className={`practice-btn ${practiceMode ? 'practice-btn--active' : ''}`}
@@ -136,7 +138,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                     </div>
 
                     {practiceMode && (
-                        <div className='practice-drawer animate-fade-down' style={{ animationDuration: '0.35s' }}>
+                        <div className='practice-drawer print-exclude animate-fade-down' style={{ animationDuration: '0.35s' }}>
                             <div className='practice-drawer__header'>
                                 <h4>Practice Your Answer</h4>
                                 <p>Record your voice or type your response to receive instant AI scoring and STAR breakdown.</p>
@@ -277,6 +279,7 @@ const Interview = () => {
     const [ regenState, setRegenState ] = useState({ section: null, loading: false })
     const [ copiedLink, setCopiedLink ] = useState(false)
     const [ pdfState, setPdfState ] = useState('idle')
+    const [ isPrinting, setIsPrinting ] = useState(false)
     const { report, setReport, getReportById, loading, getResumePdf, toggleTask, submitAnswerForEvaluation } = useInterview()
     const { interviewId } = useParams()
     const { bookmarks, toggleBookmark, isBookmarked, totalBookmarks } = useBookmarks(interviewId)
@@ -297,6 +300,19 @@ const Interview = () => {
             }))
         }
     }, [ report ])
+
+    useEffect(() => {
+        const handleBeforePrint = () => setIsPrinting(true)
+        const handleAfterPrint = () => setIsPrinting(false)
+
+        window.addEventListener('beforeprint', handleBeforePrint)
+        window.addEventListener('afterprint', handleAfterPrint)
+
+        return () => {
+            window.removeEventListener('beforeprint', handleBeforePrint)
+            window.removeEventListener('afterprint', handleAfterPrint)
+        }
+    }, [])
 
     if (loading && !report) {
         return (
@@ -347,10 +363,14 @@ const Interview = () => {
 
     const handleExportPdf = () => {
         setPdfState('generating')
+        setIsPrinting(true)
         setTimeout(() => {
             window.print()
             setPdfState('downloaded')
-            setTimeout(() => setPdfState('idle'), 2500)
+            setTimeout(() => {
+                setPdfState('idle')
+                setIsPrinting(false)
+            }, 2500)
         }, 300)
     }
 
@@ -508,161 +528,98 @@ const Interview = () => {
                 {/* ── Center Content ── */}
                 <main className='interview-content'>
 
-                    {/* Difficulty filter — shown for question sections */}
-                    {(activeNav === 'technical' || activeNav === 'behavioral') && (
-                        <div className='difficulty-filter'>
-                            <span className="difficulty-filter__label">Difficulty:</span>
-                            <div className="difficulty-filter__pills">
-                                {DIFFICULTY_FILTERS.map(level => (
-                                    <button
-                                        key={level}
-                                        type="button"
-                                        className={`diff-filter-btn ${difficultyFilter === level ? 'diff-filter-btn--active' : ''} diff-filter-btn--${level}`}
-                                        onClick={() => setDifficultyFilter(level)}
-                                        aria-pressed={difficultyFilter === level}
-                                    >
-                                        <span className={`diff-dot diff-dot--${level}`} />
-                                        {level.charAt(0).toUpperCase() + level.slice(1)}
-                                    </button>
-                                ))}
-                            </div>
+                    {/* Document Header for Print Output */}
+                    {isPrinting && (
+                        <div className="print-document-header">
+                            <h1>{report.title || 'Interview Strategy Report'}</h1>
+                            <p>Generated by InterviewAI • Match Score: {report.matchScore}%</p>
                         </div>
                     )}
 
-                    {/* ── Technical Questions ── */}
-                    {activeNav === 'technical' && (
-                        <section>
-                            <div className='content-header'>
-                                <h2>Technical Questions</h2>
-                                <div className='content-header__right'>
-                                    <span className='content-header__count'>{visibleTechnical.length} / {report.technicalQuestions.length} questions</span>
-                                    <button
-                                        type="button"
-                                        className={`regen-btn print-exclude ${regenState.section === 'technicalQuestions' ? 'regen-btn--loading' : ''}`}
-                                        onClick={() => handleRegenerate('technicalQuestions')}
-                                        disabled={regenState.loading}
-                                    >
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                        {regenState.section === 'technicalQuestions' ? 'Regenerating...' : 'Regenerate'}
-                                    </button>
+                    {/* In Print Mode, render ALL sections sequentially */}
+                    {isPrinting ? (
+                        <>
+                            {/* 1. Technical Questions */}
+                            <section className="print-section">
+                                <div className='content-header'>
+                                    <h2>Technical Questions</h2>
+                                    <span className='content-header__count'>{report.technicalQuestions?.length || 0} questions</span>
                                 </div>
-                            </div>
-                            <div className='q-list'>
-                                {visibleTechnical.map((q, i) => (
-                                    <QuestionCard
-                                        key={i}
-                                        item={q}
-                                        index={i}
-                                        questionType="Technical"
-                                        submitAnswerForEvaluation={submitAnswerForEvaluation}
-                                        isBookmarked={isBookmarked('technical', i)}
-                                        onToggleBookmark={() => toggleBookmark('technical', i)}
-                                    />
-                                ))}
-                                {visibleTechnical.length === 0 && (
-                                    <div className='empty-filter-msg'>No {difficultyFilter} questions found for technical section.</div>
-                                )}
-                            </div>
-                        </section>
-                    )}
+                                <div className='q-list'>
+                                    {report.technicalQuestions?.map((q, i) => (
+                                        <QuestionCard
+                                            key={i}
+                                            item={q}
+                                            index={i}
+                                            questionType="Technical"
+                                            forceOpen={true}
+                                            isBookmarked={isBookmarked('technical', i)}
+                                        />
+                                    ))}
+                                </div>
+                            </section>
 
-                    {/* ── Behavioral Questions ── */}
-                    {activeNav === 'behavioral' && (
-                        <section>
-                            <div className='content-header'>
-                                <h2>Behavioral Questions</h2>
-                                <div className='content-header__right'>
-                                    <span className='content-header__count'>{visibleBehavioral.length} / {report.behavioralQuestions.length} questions</span>
-                                    <button
-                                        type="button"
-                                        className={`regen-btn print-exclude ${regenState.section === 'behavioralQuestions' ? 'regen-btn--loading' : ''}`}
-                                        onClick={() => handleRegenerate('behavioralQuestions')}
-                                        disabled={regenState.loading}
-                                    >
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                        {regenState.section === 'behavioralQuestions' ? 'Regenerating...' : 'Regenerate'}
-                                    </button>
+                            {/* 2. Behavioral Questions */}
+                            <section className="print-section">
+                                <div className='content-header'>
+                                    <h2>Behavioral Questions</h2>
+                                    <span className='content-header__count'>{report.behavioralQuestions?.length || 0} questions</span>
                                 </div>
-                            </div>
-                            <div className='q-list'>
-                                {visibleBehavioral.map((q, i) => (
-                                    <QuestionCard
-                                        key={i}
-                                        item={q}
-                                        index={i}
-                                        questionType="Behavioral"
-                                        submitAnswerForEvaluation={submitAnswerForEvaluation}
-                                        isBookmarked={isBookmarked('behavioral', i)}
-                                        onToggleBookmark={() => toggleBookmark('behavioral', i)}
-                                    />
-                                ))}
-                                {visibleBehavioral.length === 0 && (
-                                    <div className='empty-filter-msg'>No {difficultyFilter} questions found for behavioral section.</div>
-                                )}
-                            </div>
-                        </section>
-                    )}
+                                <div className='q-list'>
+                                    {report.behavioralQuestions?.map((q, i) => (
+                                        <QuestionCard
+                                            key={i}
+                                            item={q}
+                                            index={i}
+                                            questionType="Behavioral"
+                                            forceOpen={true}
+                                            isBookmarked={isBookmarked('behavioral', i)}
+                                        />
+                                    ))}
+                                </div>
+                            </section>
 
-                    {/* ── Roadmap ── */}
-                    {activeNav === 'roadmap' && (
-                        <section>
-                            <div className='content-header'>
-                                <h2>Preparation Road Map</h2>
-                                <div className='content-header__right'>
-                                    <span className='content-header__count'>{report.preparationPlan.length}-day plan</span>
-                                    <button
-                                        type="button"
-                                        className={`regen-btn print-exclude ${regenState.section === 'preparationPlan' ? 'regen-btn--loading' : ''}`}
-                                        onClick={() => handleRegenerate('preparationPlan')}
-                                        disabled={regenState.loading}
-                                    >
-                                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-                                        {regenState.section === 'preparationPlan' ? 'Regenerating...' : 'Regenerate'}
-                                    </button>
+                            {/* 3. Preparation Road Map */}
+                            <section className="print-section">
+                                <div className='content-header'>
+                                    <h2>Preparation Road Map</h2>
+                                    <span className='content-header__count'>{report.preparationPlan?.length || 0}-day plan</span>
                                 </div>
-                            </div>
-                            <div className='roadmap-progress'>
-                                <div className='roadmap-progress__info'>
-                                    <span>Preparation Readiness</span>
-                                    <span>{completedCount} / {totalTasks} Tasks Completed ({progressPct}%)</span>
+                                <div className='roadmap-progress'>
+                                    <div className='roadmap-progress__info'>
+                                        <span>Preparation Readiness</span>
+                                        <span>{completedCount} / {totalTasks} Tasks Completed ({progressPct}%)</span>
+                                    </div>
+                                    <div className='roadmap-progress__bar'>
+                                        <div className='roadmap-progress__fill' style={{ width: `${progressPct}%` }} />
+                                    </div>
                                 </div>
-                                <div className='roadmap-progress__bar'>
-                                    <div className='roadmap-progress__fill' style={{ width: `${progressPct}%` }} />
+                                <div className='roadmap-list'>
+                                    {report.preparationPlan?.map((day) => (
+                                        <RoadMapDay
+                                            key={day.day}
+                                            day={day}
+                                            completedTasks={report.completedTasks}
+                                            onToggleTask={() => {}}
+                                            interviewId={interviewId}
+                                        />
+                                    ))}
                                 </div>
-                            </div>
-                            <div className='roadmap-list'>
-                                {report.preparationPlan.map((day) => (
-                                    <RoadMapDay
-                                        key={day.day}
-                                        day={day}
-                                        completedTasks={report.completedTasks}
-                                        onToggleTask={toggleTask}
-                                        interviewId={interviewId}
-                                    />
-                                ))}
-                            </div>
-                        </section>
-                    )}
+                            </section>
 
-                    {/* ── Bookmarks ── */}
-                    {activeNav === 'bookmarks' && (
-                        <section>
-                            <div className='content-header'>
-                                <h2>Bookmarked Questions</h2>
-                                <span className='content-header__count'>{totalBookmarks} saved</span>
-                            </div>
-                            {totalBookmarks === 0 ? (
-                                <div className='empty-filter-msg'>
-                                    No bookmarks yet. Click the ★ icon on any question to save it here.
-                                </div>
-                            ) : (
-                                <>
+                            {/* 4. Bookmarked Questions */}
+                            {totalBookmarks > 0 && (
+                                <section className="print-section">
+                                    <div className='content-header'>
+                                        <h2>Bookmarked Questions</h2>
+                                        <span className='content-header__count'>{totalBookmarks} saved</span>
+                                    </div>
                                     {bookmarkedTechnical.length > 0 && (
                                         <div className='bookmark-group'>
                                             <p className='bookmark-group__label'>Technical</p>
                                             <div className='q-list'>
                                                 {bookmarkedTechnical.map((q, i) => (
-                                                    <QuestionCard key={i} item={q} index={i} questionType="Technical" submitAnswerForEvaluation={submitAnswerForEvaluation} isBookmarked={true} onToggleBookmark={() => toggleBookmark('technical', (report.technicalQuestions || []).indexOf(q))} />
+                                                    <QuestionCard key={i} item={q} index={i} questionType="Technical" forceOpen={true} isBookmarked={true} />
                                                 ))}
                                             </div>
                                         </div>
@@ -672,14 +629,191 @@ const Interview = () => {
                                             <p className='bookmark-group__label'>Behavioral</p>
                                             <div className='q-list'>
                                                 {bookmarkedBehavioral.map((q, i) => (
-                                                    <QuestionCard key={i} item={q} index={i} questionType="Behavioral" submitAnswerForEvaluation={submitAnswerForEvaluation} isBookmarked={true} onToggleBookmark={() => toggleBookmark('behavioral', (report.behavioralQuestions || []).indexOf(q))} />
+                                                    <QuestionCard key={i} item={q} index={i} questionType="Behavioral" forceOpen={true} isBookmarked={true} />
                                                 ))}
                                             </div>
                                         </div>
                                     )}
-                                </>
+                                </section>
                             )}
-                        </section>
+                        </>
+                    ) : (
+                        /* In Interactive Mode, render active tab section */
+                        <>
+                            {/* Difficulty filter — shown for question sections */}
+                            {(activeNav === 'technical' || activeNav === 'behavioral') && (
+                                <div className='difficulty-filter'>
+                                    <span className="difficulty-filter__label">Difficulty:</span>
+                                    <div className="difficulty-filter__pills">
+                                        {DIFFICULTY_FILTERS.map(level => (
+                                            <button
+                                                key={level}
+                                                type="button"
+                                                className={`diff-filter-btn ${difficultyFilter === level ? 'diff-filter-btn--active' : ''} diff-filter-btn--${level}`}
+                                                onClick={() => setDifficultyFilter(level)}
+                                                aria-pressed={difficultyFilter === level}
+                                            >
+                                                <span className={`diff-dot diff-dot--${level}`} />
+                                                {level.charAt(0).toUpperCase() + level.slice(1)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* ── Technical Questions ── */}
+                            {activeNav === 'technical' && (
+                                <section>
+                                    <div className='content-header'>
+                                        <h2>Technical Questions</h2>
+                                        <div className='content-header__right'>
+                                            <span className='content-header__count'>{visibleTechnical.length} / {report.technicalQuestions.length} questions</span>
+                                            <button
+                                                type="button"
+                                                className={`regen-btn print-exclude ${regenState.section === 'technicalQuestions' ? 'regen-btn--loading' : ''}`}
+                                                onClick={() => handleRegenerate('technicalQuestions')}
+                                                disabled={regenState.loading}
+                                            >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                                {regenState.section === 'technicalQuestions' ? 'Regenerating...' : 'Regenerate'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className='q-list'>
+                                        {visibleTechnical.map((q, i) => (
+                                            <QuestionCard
+                                                key={i}
+                                                item={q}
+                                                index={i}
+                                                questionType="Technical"
+                                                submitAnswerForEvaluation={submitAnswerForEvaluation}
+                                                isBookmarked={isBookmarked('technical', i)}
+                                                onToggleBookmark={() => toggleBookmark('technical', i)}
+                                            />
+                                        ))}
+                                        {visibleTechnical.length === 0 && (
+                                            <div className='empty-filter-msg'>No {difficultyFilter} questions found for technical section.</div>
+                                        )}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* ── Behavioral Questions ── */}
+                            {activeNav === 'behavioral' && (
+                                <section>
+                                    <div className='content-header'>
+                                        <h2>Behavioral Questions</h2>
+                                        <div className='content-header__right'>
+                                            <span className='content-header__count'>{visibleBehavioral.length} / {report.behavioralQuestions.length} questions</span>
+                                            <button
+                                                type="button"
+                                                className={`regen-btn print-exclude ${regenState.section === 'behavioralQuestions' ? 'regen-btn--loading' : ''}`}
+                                                onClick={() => handleRegenerate('behavioralQuestions')}
+                                                disabled={regenState.loading}
+                                            >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                                {regenState.section === 'behavioralQuestions' ? 'Regenerating...' : 'Regenerate'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className='q-list'>
+                                        {visibleBehavioral.map((q, i) => (
+                                            <QuestionCard
+                                                key={i}
+                                                item={q}
+                                                index={i}
+                                                questionType="Behavioral"
+                                                submitAnswerForEvaluation={submitAnswerForEvaluation}
+                                                isBookmarked={isBookmarked('behavioral', i)}
+                                                onToggleBookmark={() => toggleBookmark('behavioral', i)}
+                                            />
+                                        ))}
+                                        {visibleBehavioral.length === 0 && (
+                                            <div className='empty-filter-msg'>No {difficultyFilter} questions found for behavioral section.</div>
+                                        )}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* ── Roadmap ── */}
+                            {activeNav === 'roadmap' && (
+                                <section>
+                                    <div className='content-header'>
+                                        <h2>Preparation Road Map</h2>
+                                        <div className='content-header__right'>
+                                            <span className='content-header__count'>{report.preparationPlan.length}-day plan</span>
+                                            <button
+                                                type="button"
+                                                className={`regen-btn print-exclude ${regenState.section === 'preparationPlan' ? 'regen-btn--loading' : ''}`}
+                                                onClick={() => handleRegenerate('preparationPlan')}
+                                                disabled={regenState.loading}
+                                            >
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                                                {regenState.section === 'preparationPlan' ? 'Regenerating...' : 'Regenerate'}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className='roadmap-progress'>
+                                        <div className='roadmap-progress__info'>
+                                            <span>Preparation Readiness</span>
+                                            <span>{completedCount} / {totalTasks} Tasks Completed ({progressPct}%)</span>
+                                        </div>
+                                        <div className='roadmap-progress__bar'>
+                                            <div className='roadmap-progress__fill' style={{ width: `${progressPct}%` }} />
+                                        </div>
+                                    </div>
+                                    <div className='roadmap-list'>
+                                        {report.preparationPlan.map((day) => (
+                                            <RoadMapDay
+                                                key={day.day}
+                                                day={day}
+                                                completedTasks={report.completedTasks}
+                                                onToggleTask={toggleTask}
+                                                interviewId={interviewId}
+                                            />
+                                        ))}
+                                    </div>
+                                </section>
+                            )}
+
+                            {/* ── Bookmarks ── */}
+                            {activeNav === 'bookmarks' && (
+                                <section>
+                                    <div className='content-header'>
+                                        <h2>Bookmarked Questions</h2>
+                                        <span className='content-header__count'>{totalBookmarks} saved</span>
+                                    </div>
+                                    {totalBookmarks === 0 ? (
+                                        <div className='empty-filter-msg'>
+                                            No bookmarks yet. Click the ★ icon on any question to save it here.
+                                        </div>
+                                    ) : (
+                                        <>
+                                            {bookmarkedTechnical.length > 0 && (
+                                                <div className='bookmark-group'>
+                                                    <p className='bookmark-group__label'>Technical</p>
+                                                    <div className='q-list'>
+                                                        {bookmarkedTechnical.map((q, i) => (
+                                                            <QuestionCard key={i} item={q} index={i} questionType="Technical" submitAnswerForEvaluation={submitAnswerForEvaluation} isBookmarked={true} onToggleBookmark={() => toggleBookmark('technical', (report.technicalQuestions || []).indexOf(q))} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {bookmarkedBehavioral.length > 0 && (
+                                                <div className='bookmark-group'>
+                                                    <p className='bookmark-group__label'>Behavioral</p>
+                                                    <div className='q-list'>
+                                                        {bookmarkedBehavioral.map((q, i) => (
+                                                            <QuestionCard key={i} item={q} index={i} questionType="Behavioral" submitAnswerForEvaluation={submitAnswerForEvaluation} isBookmarked={true} onToggleBookmark={() => toggleBookmark('behavioral', (report.behavioralQuestions || []).indexOf(q))} />
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </>
+                                    )}
+                                </section>
+                            )}
+                        </>
                     )}
                 </main>
 
