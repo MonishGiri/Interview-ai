@@ -1,10 +1,10 @@
 import axios from "axios";
 import api from "../../../services/api.client";
 
-const PUBLIC_API_BASE = import.meta.env.VITE_API_URL ||
+const PUBLIC_API_BASE = (import.meta.env.VITE_API_URL ||
     (import.meta.env.MODE === 'production'
         ? 'https://interview-ai-xqd6.onrender.com'
-        : 'http://localhost:3000')
+        : 'http://localhost:3000')).replace(/\/$/, '')
 
 /**
  * @description Service to generate interview report based on user self description, resume and job description.
