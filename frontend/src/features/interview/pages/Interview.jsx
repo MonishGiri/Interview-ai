@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react'
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import '../style/interview.scss'
 import '../style/interview.print.scss'
 import { useInterview } from '../hooks/useInterview.js'
@@ -21,42 +20,143 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
     const [open, setOpen] = useState(false)
     const [practiceMode, setPracticeMode] = useState(false)
     const [userAnswer, setUserAnswer] = useState('')
+    const [isListening, setIsListening] = useState(false)
+    const [voiceError, setVoiceError] = useState(null)
     const [evaluating, setEvaluating] = useState(false)
     const [evaluation, setEvaluation] = useState(null)
     const [evalError, setEvalError] = useState(null)
 
-    const baseTextRef = useRef('')
+    const recognitionRef = useRef(null)
+    const mediaStreamRef = useRef(null)
+    const committedTextRef = useRef('')
+    const isListeningRef = useRef(false)
 
-    const {
-        transcript,
-        interimTranscript,
-        listening,
-        resetTranscript,
-        browserSupportsSpeechRecognition
-    } = useSpeechRecognition()
-
-    // Sync transcript into userAnswer — base text prefix + new speech
     useEffect(() => {
-        if (listening) {
-            const combined = (baseTextRef.current + transcript).replace(/\s+/g, ' ').trim()
-            setUserAnswer(combined)
+        return () => {
+            stopListeningSession()
         }
-    }, [transcript, listening])
+    }, [])
 
-    const toggleListening = () => {
-        if (!browserSupportsSpeechRecognition) {
-            alert('Voice recognition is not supported in your browser. Please type your answer.')
+    const stopListeningSession = () => {
+        isListeningRef.current = false
+        setIsListening(false)
+
+        if (recognitionRef.current) {
+            try { recognitionRef.current.abort() } catch (e) { }
+            recognitionRef.current = null
+        }
+
+        if (mediaStreamRef.current) {
+            try {
+                mediaStreamRef.current.getTracks().forEach(track => track.stop())
+            } catch (e) { }
+            mediaStreamRef.current = null
+        }
+    }
+
+    const startRecognitionSession = (SpeechRecognitionClass) => {
+        if (!isListeningRef.current) return
+
+        let sessionFinal = ''
+
+        try {
+            const recognition = new SpeechRecognitionClass()
+            recognition.continuous = true
+            recognition.interimResults = true
+            recognition.lang = 'en-US'
+
+            recognition.onresult = (event) => {
+                let interim = ''
+                sessionFinal = ''
+
+                for (let i = 0; i < event.results.length; i++) {
+                    const text = event.results[i][0]?.transcript || ''
+                    if (event.results[i].isFinal) {
+                        sessionFinal += text
+                    } else {
+                        interim += text
+                    }
+                }
+
+                const liveText = (committedTextRef.current + sessionFinal + interim).replace(/\s+/g, ' ').trim()
+                setUserAnswer(liveText)
+            }
+
+            recognition.onerror = (e) => {
+                console.warn('Speech recognition event error:', e)
+                if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+                    setVoiceError('Microphone access denied. Please check your browser permissions.')
+                    stopListeningSession()
+                } else if (e.error === 'network') {
+                    setVoiceError('Network error during voice recognition. Please try again.')
+                    stopListeningSession()
+                }
+            }
+
+            recognition.onend = () => {
+                if (sessionFinal) {
+                    committedTextRef.current = (committedTextRef.current + sessionFinal + ' ').replace(/\s+/g, ' ')
+                    setUserAnswer(committedTextRef.current.trim())
+                }
+
+                if (isListeningRef.current) {
+                    setTimeout(() => {
+                        if (isListeningRef.current) {
+                            startRecognitionSession(SpeechRecognitionClass)
+                        }
+                    }, 100)
+                } else {
+                    setIsListening(false)
+                }
+            }
+
+            recognitionRef.current = recognition
+            recognition.start()
+        } catch (err) {
+            console.error('Failed to start speech recognition session:', err)
+            stopListeningSession()
+        }
+    }
+
+    const toggleListening = async () => {
+        setVoiceError(null)
+
+        if (isListening) {
+            stopListeningSession()
             return
         }
 
-        if (listening) {
-            SpeechRecognition.stopListening()
-        } else {
-            // Preserve any existing typed/spoken text as the base
-            baseTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
-            resetTranscript()
-            SpeechRecognition.startListening({ continuous: true, language: 'en-US' })
+        const SpeechRecognitionClass = window.SpeechRecognition || window.webkitSpeechRecognition
+
+        if (!SpeechRecognitionClass) {
+            setVoiceError('Voice recognition is not supported in your browser. Please type your response.')
+            return
         }
+
+        // Request microphone permission explicitly via getUserMedia first
+        try {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+                mediaStreamRef.current = stream
+            }
+        } catch (err) {
+            console.error('Microphone permission request error:', err)
+            setVoiceError('Microphone access denied or audio device not found.')
+            return
+        }
+
+        committedTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
+        isListeningRef.current = true
+        setIsListening(true)
+
+        startRecognitionSession(SpeechRecognitionClass)
+    }
+
+    const handleTogglePracticeMode = () => {
+        if (practiceMode && isListening) {
+            stopListeningSession()
+        }
+        setPracticeMode(p => !p)
     }
 
     const handleEvaluate = async () => {
@@ -118,7 +218,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                         <button
                             type="button"
                             className={`practice-btn ${practiceMode ? 'practice-btn--active' : ''}`}
-                            onClick={() => setPracticeMode(p => !p)}
+                            onClick={handleTogglePracticeMode}
                         >
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /><line x1="12" y1="19" x2="12" y2="22" /></svg>
                             {practiceMode ? 'Close Practice Mode' : 'Practice & AI Evaluation'}
@@ -136,13 +236,13 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                                 <div className='voice-controls'>
                                     <button
                                         type="button"
-                                        className={`mic-btn ${listening ? 'mic-btn--recording' : ''}`}
+                                        className={`mic-btn ${isListening ? 'mic-btn--recording' : ''}`}
                                         onClick={toggleListening}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /></svg>
-                                        {listening ? 'Stop Recording...' : 'Record Voice Answer'}
+                                        {isListening ? 'Stop Recording...' : 'Record Voice Answer'}
                                     </button>
-                                    {listening && (
+                                    {isListening && (
                                         <div className='recording-pulse-wrapper'>
                                             <span className='wave-dot'></span>
                                             <span className='wave-dot'></span>
@@ -151,6 +251,8 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                                         </div>
                                     )}
                                 </div>
+
+                                {voiceError && <p className='eval-error' style={{ marginTop: '8px' }}>{voiceError}</p>}
 
                                 <textarea
                                     className='practice-textarea'
