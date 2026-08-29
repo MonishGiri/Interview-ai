@@ -26,48 +26,92 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
     const [evalError, setEvalError] = useState(null)
 
     const recognitionRef = useRef(null)
+    const baseTextRef = useRef('')
 
     useEffect(() => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition()
-            recognition.continuous = true
-            recognition.interimResults = true
-            recognition.lang = 'en-US'
-
-            recognition.onresult = (event) => {
-                let currentTranscript = ''
-                for (let i = 0; i < event.results.length; i++) {
-                    currentTranscript += event.results[i][0].transcript
+        return () => {
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.abort()
+                } catch (e) {
+                    // Ignore cleanup error on unmount
                 }
-                setUserAnswer(currentTranscript)
             }
-
-            recognition.onerror = (e) => {
-                console.error("Speech recognition error:", e)
-                setIsListening(false)
-            }
-
-            recognition.onend = () => {
-                setIsListening(false)
-            }
-
-            recognitionRef.current = recognition
         }
     }, [])
 
     const toggleListening = () => {
-        if (!recognitionRef.current) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+        if (!SpeechRecognition) {
             alert("Voice recognition is not supported in your browser. Please type your answer.")
             return
         }
 
         if (isListening) {
-            recognitionRef.current.stop()
+            if (recognitionRef.current) {
+                try {
+                    recognitionRef.current.stop()
+                } catch (e) {
+                    console.error("Error stopping recognition:", e)
+                }
+            }
             setIsListening(false)
         } else {
-            recognitionRef.current.start()
-            setIsListening(true)
+            // Save base text before starting recognition session so spoken text appends cleanly
+            baseTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
+
+            try {
+                if (recognitionRef.current) {
+                    try { recognitionRef.current.abort() } catch (e) { }
+                }
+
+                const recognition = new SpeechRecognition()
+                recognition.continuous = true
+                recognition.interimResults = true
+                recognition.lang = 'en-US'
+
+                recognition.onresult = (event) => {
+                    let finalTranscript = ''
+                    let interimTranscript = ''
+
+                    for (let i = 0; i < event.results.length; i++) {
+                        const result = event.results[i]
+                        const transcript = result[0]?.transcript || ''
+                        if (result.isFinal) {
+                            finalTranscript += transcript + ' '
+                        } else {
+                            interimTranscript += transcript
+                        }
+                    }
+
+                    const cleanFinal = finalTranscript.replace(/\s+/g, ' ')
+                    const cleanInterim = interimTranscript.replace(/\s+/g, ' ')
+                    const combinedSpeech = (cleanFinal + cleanInterim).trimStart()
+
+                    const prefix = baseTextRef.current
+                    if (prefix && combinedSpeech) {
+                        setUserAnswer(prefix + combinedSpeech)
+                    } else if (combinedSpeech) {
+                        setUserAnswer(combinedSpeech)
+                    }
+                }
+
+                recognition.onerror = (e) => {
+                    console.error("Speech recognition error:", e)
+                    setIsListening(false)
+                }
+
+                recognition.onend = () => {
+                    setIsListening(false)
+                }
+
+                recognitionRef.current = recognition
+                recognition.start()
+                setIsListening(true)
+            } catch (e) {
+                console.error("Error starting speech recognition:", e)
+                setIsListening(false)
+            }
         }
     }
 
