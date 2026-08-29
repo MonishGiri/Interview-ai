@@ -27,9 +27,17 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
 
     const recognitionRef = useRef(null)
     const baseTextRef = useRef('')
+    const finalTranscriptRef = useRef('')
+    const isListeningRef = useRef(false)
+    const userAnswerRef = useRef(userAnswer)
+
+    useEffect(() => {
+        userAnswerRef.current = userAnswer
+    }, [userAnswer])
 
     useEffect(() => {
         return () => {
+            isListeningRef.current = false
             if (recognitionRef.current) {
                 try {
                     recognitionRef.current.abort()
@@ -48,6 +56,8 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
         }
 
         if (isListening) {
+            isListeningRef.current = false
+            setIsListening(false)
             if (recognitionRef.current) {
                 try {
                     recognitionRef.current.stop()
@@ -55,10 +65,11 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                     console.error("Error stopping recognition:", e)
                 }
             }
-            setIsListening(false)
         } else {
             // Save base text before starting recognition session so spoken text appends cleanly
             baseTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
+            finalTranscriptRef.current = ''
+            isListeningRef.current = true
 
             try {
                 if (recognitionRef.current) {
@@ -71,38 +82,48 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                 recognition.lang = 'en-US'
 
                 recognition.onresult = (event) => {
-                    let finalTranscript = ''
                     let interimTranscript = ''
 
-                    for (let i = 0; i < event.results.length; i++) {
+                    // MUST start from event.resultIndex to avoid re-processing previously finalized results!
+                    for (let i = event.resultIndex; i < event.results.length; i++) {
                         const result = event.results[i]
                         const transcript = result[0]?.transcript || ''
                         if (result.isFinal) {
-                            finalTranscript += transcript + ' '
+                            finalTranscriptRef.current += transcript.trim() + ' '
                         } else {
                             interimTranscript += transcript
                         }
                     }
 
-                    const cleanFinal = finalTranscript.replace(/\s+/g, ' ')
-                    const cleanInterim = interimTranscript.replace(/\s+/g, ' ')
-                    const combinedSpeech = (cleanFinal + cleanInterim).trimStart()
+                    const base = baseTextRef.current
+                    const final = finalTranscriptRef.current
+                    const interim = interimTranscript ? interimTranscript.trim() : ''
 
-                    const prefix = baseTextRef.current
-                    if (prefix && combinedSpeech) {
-                        setUserAnswer(prefix + combinedSpeech)
-                    } else if (combinedSpeech) {
-                        setUserAnswer(combinedSpeech)
-                    }
+                    const combined = (base + final + interim).replace(/\s+/g, ' ')
+                    setUserAnswer(combined.trim())
                 }
 
                 recognition.onerror = (e) => {
                     console.error("Speech recognition error:", e)
-                    setIsListening(false)
+                    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+                        isListeningRef.current = false
+                        setIsListening(false)
+                    }
                 }
 
                 recognition.onend = () => {
-                    setIsListening(false)
+                    if (isListeningRef.current) {
+                        baseTextRef.current = userAnswerRef.current ? (userAnswerRef.current.trim() + ' ') : ''
+                        finalTranscriptRef.current = ''
+                        try {
+                            recognition.start()
+                        } catch (err) {
+                            isListeningRef.current = false
+                            setIsListening(false)
+                        }
+                    } else {
+                        setIsListening(false)
+                    }
                 }
 
                 recognitionRef.current = recognition
@@ -110,6 +131,7 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                 setIsListening(true)
             } catch (e) {
                 console.error("Error starting speech recognition:", e)
+                isListeningRef.current = false
                 setIsListening(false)
             }
         }
