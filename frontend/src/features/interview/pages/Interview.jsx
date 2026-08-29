@@ -26,27 +26,78 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
     const [evalError, setEvalError] = useState(null)
 
     const recognitionRef = useRef(null)
-    const baseTextRef = useRef('')
-    const finalTranscriptRef = useRef('')
+    const committedTextRef = useRef('')
     const isListeningRef = useRef(false)
-    const userAnswerRef = useRef(userAnswer)
-
-    useEffect(() => {
-        userAnswerRef.current = userAnswer
-    }, [userAnswer])
 
     useEffect(() => {
         return () => {
             isListeningRef.current = false
             if (recognitionRef.current) {
-                try {
-                    recognitionRef.current.abort()
-                } catch (e) {
-                    // Ignore cleanup error on unmount
-                }
+                try { recognitionRef.current.abort() } catch (e) { }
+                recognitionRef.current = null
             }
         }
     }, [])
+
+    const startRecognitionSession = (SpeechRecognition) => {
+        if (!isListeningRef.current) return
+
+        let sessionFinal = ''
+
+        const recognition = new SpeechRecognition()
+        recognition.continuous = false
+        recognition.interimResults = true
+        recognition.lang = 'en-US'
+
+        recognition.onresult = (event) => {
+            let interim = ''
+            sessionFinal = ''
+
+            for (let i = 0; i < event.results.length; i++) {
+                const transcript = event.results[i][0]?.transcript || ''
+                if (event.results[i].isFinal) {
+                    sessionFinal += transcript
+                } else {
+                    interim += transcript
+                }
+            }
+
+            const preview = (committedTextRef.current + sessionFinal + interim).replace(/\s+/g, ' ').trim()
+            setUserAnswer(preview)
+        }
+
+        recognition.onerror = (e) => {
+            console.error('Speech recognition error:', e)
+            if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
+                isListeningRef.current = false
+                setIsListening(false)
+            }
+        }
+
+        recognition.onend = () => {
+            if (sessionFinal) {
+                committedTextRef.current = (committedTextRef.current + sessionFinal + ' ').replace(/\s+/g, ' ')
+                setUserAnswer(committedTextRef.current.trim())
+            }
+
+            if (isListeningRef.current) {
+                setTimeout(() => {
+                    if (isListeningRef.current) {
+                        startRecognitionSession(SpeechRecognition)
+                    }
+                }, 100)
+            } else {
+                setIsListening(false)
+            }
+        }
+
+        recognitionRef.current = recognition
+        try {
+            recognition.start()
+        } catch (e) {
+            console.error('Failed to start recognition session:', e)
+        }
+    }
 
     const toggleListening = () => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -59,81 +110,13 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
             isListeningRef.current = false
             setIsListening(false)
             if (recognitionRef.current) {
-                try {
-                    recognitionRef.current.stop()
-                } catch (e) {
-                    console.error("Error stopping recognition:", e)
-                }
+                try { recognitionRef.current.stop() } catch (e) { }
             }
         } else {
-            // Save base text before starting recognition session so spoken text appends cleanly
-            baseTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
-            finalTranscriptRef.current = ''
+            committedTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
             isListeningRef.current = true
-
-            try {
-                if (recognitionRef.current) {
-                    try { recognitionRef.current.abort() } catch (e) { }
-                }
-
-                const recognition = new SpeechRecognition()
-                recognition.continuous = true
-                recognition.interimResults = true
-                recognition.lang = 'en-US'
-
-                recognition.onresult = (event) => {
-                    let interimTranscript = ''
-
-                    // MUST start from event.resultIndex to avoid re-processing previously finalized results!
-                    for (let i = event.resultIndex; i < event.results.length; i++) {
-                        const result = event.results[i]
-                        const transcript = result[0]?.transcript || ''
-                        if (result.isFinal) {
-                            finalTranscriptRef.current += transcript.trim() + ' '
-                        } else {
-                            interimTranscript += transcript
-                        }
-                    }
-
-                    const base = baseTextRef.current
-                    const final = finalTranscriptRef.current
-                    const interim = interimTranscript ? interimTranscript.trim() : ''
-
-                    const combined = (base + final + interim).replace(/\s+/g, ' ')
-                    setUserAnswer(combined.trim())
-                }
-
-                recognition.onerror = (e) => {
-                    console.error("Speech recognition error:", e)
-                    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
-                        isListeningRef.current = false
-                        setIsListening(false)
-                    }
-                }
-
-                recognition.onend = () => {
-                    if (isListeningRef.current) {
-                        baseTextRef.current = userAnswerRef.current ? (userAnswerRef.current.trim() + ' ') : ''
-                        finalTranscriptRef.current = ''
-                        try {
-                            recognition.start()
-                        } catch (err) {
-                            isListeningRef.current = false
-                            setIsListening(false)
-                        }
-                    } else {
-                        setIsListening(false)
-                    }
-                }
-
-                recognitionRef.current = recognition
-                recognition.start()
-                setIsListening(true)
-            } catch (e) {
-                console.error("Error starting speech recognition:", e)
-                isListeningRef.current = false
-                setIsListening(false)
-            }
+            setIsListening(true)
+            startRecognitionSession(SpeechRecognition)
         }
     }
 
