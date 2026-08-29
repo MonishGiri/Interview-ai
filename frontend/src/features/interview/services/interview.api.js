@@ -71,6 +71,21 @@ export const generateResumePdf = async ({ interviewReportId }) => {
 }
 
 /**
+ * @description Service to generate interview strategy report pdf directly from backend database.
+ */
+export const generateReportPdfApi = async ({ interviewId }) => {
+    try {
+        const response = await api.get(`/api/interview/report/pdf/${interviewId}`, {
+            responseType: "blob"
+        })
+        return response.data
+    } catch (error) {
+        console.log(error)
+        return null
+    }
+}
+
+/**
  * @description Service to toggle completion status of a preparation task.
  */
 export const toggleTaskCompletion = async ({ interviewId, day, taskIndex }) => {

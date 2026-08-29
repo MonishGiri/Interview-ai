@@ -1,7 +1,7 @@
 const pdfParse = require("pdf-parse")
 const mammoth = require("mammoth")
 const crypto = require("crypto")
-const { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection } = require("../services/ai.service")
+const { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection, generateReportPdf } = require("../services/ai.service")
 const interviewReportModel = require("../models/interviewReport.model")
 const asyncHandler = require("../middlewares/asyncHandler")
 
@@ -105,9 +105,9 @@ const generateResumePdfController = asyncHandler(async (req, res) => {
     const candidateName = user ? user.username : "Candidate"
     const candidateEmail = user ? user.email : "candidate@interview.ai"
 
-    const pdfBuffer = await generateResumePdf({ 
-        resume, 
-        jobDescription, 
+    const pdfBuffer = await generateResumePdf({
+        resume,
+        jobDescription,
         selfDescription,
         candidateName,
         candidateEmail
@@ -275,11 +275,37 @@ const regenerateSectionController = asyncHandler(async (req, res) => {
     })
 })
 
+/**
+ * @description Controller to generate strategy report PDF based on stored interview report in database.
+ */
+const generateReportPdfController = asyncHandler(async (req, res) => {
+    const { interviewId } = req.params
+
+    const interviewReport = await interviewReportModel.findOne({ _id: interviewId, user: req.user.id })
+
+    if (!interviewReport) {
+        return res.status(404).json({
+            message: "Interview report not found."
+        })
+    }
+
+    const pdfBuffer = await generateReportPdf(interviewReport)
+    const sanitizedTitle = interviewReport.title ? interviewReport.title.replace(/[^a-zA-Z0-9]/g, "_") : "Interview"
+
+    res.set({
+        "Content-Type": "application/pdf",
+        "Content-Disposition": `attachment; filename=${sanitizedTitle}_Strategy_Report.pdf`
+    })
+
+    res.send(pdfBuffer)
+})
+
 module.exports = {
     generateInterViewReportController,
     getInterviewReportByIdController,
     getAllInterviewReportsController,
     generateResumePdfController,
+    generateReportPdfController,
     toggleTaskCompletionController,
     evaluateAnswerController,
     generateShareLinkController,

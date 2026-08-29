@@ -293,4 +293,185 @@ async function regenerateSection({ section, resume, selfDescription, jobDescript
     return JSON.parse(response.text)
 }
 
-module.exports = { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection }
+async function generateReportPdf(report) {
+    const escapeHtml = (str) => {
+        if (!str) return ''
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+    }
+
+    const techQs = report.technicalQuestions || []
+    const behQs = report.behavioralQuestions || []
+    const roadMap = report.preparationPlan || []
+    const skillGaps = report.skillGaps || []
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <style>
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #ffffff; color: #0f172a; line-height: 1.5; padding: 0; }
+            .pdf-container { padding: 10px; max-width: 800px; margin: 0 auto; }
+            
+            .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 16px; margin-bottom: 24px; }
+            .header-title { font-size: 24px; font-weight: 700; color: #1e293b; text-transform: capitalize; margin-bottom: 4px; }
+            .header-subtitle { font-size: 13px; color: #64748b; }
+            .score-badge { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #ffffff; padding: 8px 16px; border-radius: 12px; text-align: center; }
+            .score-val { font-size: 22px; font-weight: 800; display: block; line-height: 1; }
+            .score-lbl { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.9; }
+
+            .section { margin-bottom: 28px; }
+            .section-title { font-size: 18px; font-weight: 700; color: #0f172a; border-left: 4px solid #6366f1; padding-left: 10px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+            .count-badge { font-size: 12px; font-weight: 500; background: #f1f5f9; color: #475569; padding: 2px 8px; border-radius: 999px; }
+
+            .skill-gaps-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+            .skill-tag { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 6px; }
+            .skill-tag.high { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+            .skill-tag.medium { background: #fffbeb; color: #d97706; border: 1px solid #fde68a; }
+            .skill-tag.low { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; }
+
+            .q-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; margin-bottom: 14px; page-break-inside: avoid; break-inside: avoid; }
+            .q-card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+            .q-num { background: #e0e7ff; color: #4338ca; font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; }
+            .q-diff { font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; white-space: nowrap; }
+            .q-diff.easy { background: #dcfce7; color: #15803d; }
+            .q-diff.medium { background: #fef9c3; color: #a16207; }
+            .q-diff.hard { background: #fee2e2; color: #b91c1c; }
+            .q-text { font-size: 14px; font-weight: 600; color: #1e293b; flex: 1; }
+
+            .box { border-radius: 8px; padding: 10px 12px; margin-top: 8px; font-size: 13px; }
+            .box-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px; }
+            .box-intention { background: #f1f5f9; border-left: 3px solid #64748b; color: #334155; }
+            .box-intention .box-tag { color: #475569; }
+            .box-answer { background: #eff6ff; border-left: 3px solid #3b82f6; color: #1e3a8a; }
+            .box-answer .box-tag { color: #2563eb; }
+            .box-text { line-height: 1.5; white-space: pre-line; }
+
+            .roadmap-day { background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; page-break-inside: avoid; break-inside: avoid; }
+            .roadmap-header { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+            .day-badge { background: #4f46e5; color: #ffffff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 6px; }
+            .day-focus { font-size: 14px; font-weight: 700; color: #0f172a; }
+            .task-list { list-style: none; padding-left: 0; }
+            .task-item { font-size: 13px; color: #334155; padding: 4px 0 4px 18px; position: relative; }
+            .task-item::before { content: "•"; color: #6366f1; font-weight: bold; font-size: 16px; position: absolute; left: 4px; top: 0px; }
+        </style>
+    </head>
+    <body>
+        <div class="pdf-container">
+            <div class="header">
+                <div>
+                    <h1 class="header-title">${escapeHtml(report.title || 'Interview Strategy Report')}</h1>
+                    <p class="header-subtitle">Generated by InterviewAI • Comprehensive Preparation Strategy</p>
+                </div>
+                <div class="score-badge">
+                    <span class="score-val">${report.matchScore}%</span>
+                    <span class="score-lbl">Match Score</span>
+                </div>
+            </div>
+
+            ${skillGaps.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">Identified Skill Gaps</h2>
+                    <div class="skill-gaps-grid">
+                        ${skillGaps.map(g => `
+                            <span class="skill-tag ${g.severity || 'medium'}">${escapeHtml(g.skill)} (${g.severity || 'medium'} priority)</span>
+                        `).join('')}
+                    </div>
+                </div>
+            ` : ''}
+
+            ${techQs.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">
+                        Technical Questions
+                        <span class="count-badge">${techQs.length} Questions</span>
+                    </h2>
+                    ${techQs.map((q, i) => `
+                        <div class="q-card">
+                            <div class="q-card-header">
+                                <span class="q-num">Q${i + 1}</span>
+                                ${q.difficulty ? `<span class="q-diff ${q.difficulty}">${q.difficulty}</span>` : ''}
+                                <p class="q-text">${escapeHtml(q.question)}</p>
+                            </div>
+                            ${q.intention ? `
+                                <div class="box box-intention">
+                                    <span class="box-tag">Intention</span>
+                                    <p class="box-text">${escapeHtml(q.intention)}</p>
+                                </div>
+                            ` : ''}
+                            ${q.answer ? `
+                                <div class="box box-answer">
+                                    <span class="box-tag">Model Answer</span>
+                                    <p class="box-text">${escapeHtml(q.answer)}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${behQs.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">
+                        Behavioral Questions
+                        <span class="count-badge">${behQs.length} Questions</span>
+                    </h2>
+                    ${behQs.map((q, i) => `
+                        <div class="q-card">
+                            <div class="q-card-header">
+                                <span class="q-num">Q${i + 1}</span>
+                                ${q.difficulty ? `<span class="q-diff ${q.difficulty}">${q.difficulty}</span>` : ''}
+                                <p class="q-text">${escapeHtml(q.question)}</p>
+                            </div>
+                            ${q.intention ? `
+                                <div class="box box-intention">
+                                    <span class="box-tag">Intention</span>
+                                    <p class="box-text">${escapeHtml(q.intention)}</p>
+                                </div>
+                            ` : ''}
+                            ${q.answer ? `
+                                <div class="box box-answer">
+                                    <span class="box-tag">Model Answer</span>
+                                    <p class="box-text">${escapeHtml(q.answer)}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+
+            ${roadMap.length > 0 ? `
+                <div class="section">
+                    <h2 class="section-title">
+                        Preparation Road Map
+                        <span class="count-badge">${roadMap.length}-Day Plan</span>
+                    </h2>
+                    ${roadMap.map((day) => `
+                        <div class="roadmap-day">
+                            <div class="roadmap-header">
+                                <span class="day-badge">Day ${day.day}</span>
+                                <h3 class="day-focus">${escapeHtml(day.focus)}</h3>
+                            </div>
+                            <ul class="task-list">
+                                ${day.tasks?.map((task) => `<li class="task-item">${escapeHtml(task)}</li>`).join('') || ''}
+                            </ul>
+                        </div>
+                    `).join('')}
+                </div>
+            ` : ''}
+        </div>
+    </body>
+    </html>
+    `
+
+    const pdfBuffer = await generatePdfFromHtml(htmlContent)
+    return pdfBuffer
+}
+
+module.exports = { generateInterviewReport, generateResumePdf, evaluateUserAnswer, regenerateSection, generateReportPdf }

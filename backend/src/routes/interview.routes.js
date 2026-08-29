@@ -34,6 +34,13 @@ interviewRouter.get("/", authMiddleware.authUser, interviewController.getAllInte
 interviewRouter.post("/resume/pdf/:interviewReportId", authMiddleware.authUser, interviewController.generateResumePdfController)
 
 /**
+ * @route GET /api/interview/report/pdf/:interviewId
+ * @description generate interview strategy report pdf
+ * @access private
+ */
+interviewRouter.get("/report/pdf/:interviewId", authMiddleware.authUser, interviewController.generateReportPdfController)
+
+/**
  * @route PATCH /api/interview/task-toggle/:interviewId
  * @description toggle completion state of a preparation plan task
  * @access private

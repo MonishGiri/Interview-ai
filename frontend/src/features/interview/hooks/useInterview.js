@@ -3,16 +3,18 @@ import {
     generateInterviewReport,
     getInterviewReportById,
     generateResumePdf,
+    generateReportPdfApi,
     toggleTaskCompletion,
     evaluateAnswer
 } from "../services/interview.api"
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { InterviewContext } from "../interview.context"
 import { useAuth } from "../../auth/hooks/useAuth"
 
 export const useInterview = () => {
     const context = useContext(InterviewContext)
     const { user } = useAuth()
+    const [resumeLoading, setResumeLoading] = useState(false)
 
     if (!context) {
         throw new Error("useInterview must be used within an InterviewProvider")
@@ -70,11 +72,11 @@ export const useInterview = () => {
     }
 
     const getResumePdf = async (interviewReportId) => {
-        setLoading(true)
+        setResumeLoading(true)
         try {
             const response = await generateResumePdf({ interviewReportId })
             if (response) {
-                const url = window.URL.createObjectURL(new Blob([ response ], { type: "application/pdf" }))
+                const url = window.URL.createObjectURL(new Blob([response], { type: "application/pdf" }))
                 const link = document.createElement("a")
                 link.href = url
                 link.setAttribute("download", `resume_${interviewReportId}.pdf`)
@@ -85,7 +87,25 @@ export const useInterview = () => {
         } catch (error) {
             console.log(error)
         } finally {
-            setLoading(false)
+            setResumeLoading(false)
+        }
+    }
+
+    const getReportPdf = async (interviewId) => {
+        try {
+            const response = await generateReportPdfApi({ interviewId })
+            if (response) {
+                const url = window.URL.createObjectURL(new Blob([response], { type: "application/pdf" }))
+                const link = document.createElement("a")
+                link.href = url
+                const sanitizedTitle = report?.title ? report.title.replace(/[^a-zA-Z0-9]/g, "_") : "Interview"
+                link.setAttribute("download", `${sanitizedTitle}_Strategy_Report.pdf`)
+                document.body.appendChild(link)
+                link.click()
+                document.body.removeChild(link)
+            }
+        } catch (error) {
+            console.log(error)
         }
     }
 
@@ -113,6 +133,7 @@ export const useInterview = () => {
 
     return {
         loading,
+        resumeLoading,
         report,
         setReport,
         reports,
@@ -120,6 +141,7 @@ export const useInterview = () => {
         getReportById,
         getReports,
         getResumePdf,
+        getReportPdf,
         toggleTask,
         submitAnswerForEvaluation
     }
