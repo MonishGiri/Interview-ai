@@ -270,6 +270,7 @@ const Interview = () => {
     const [isPrinting, setIsPrinting] = useState(false)
     const { report, setReport, getReportById, loading, resumeLoading, getResumePdf, getReportPdf, toggleTask, submitAnswerForEvaluation } = useInterview()
     const { interviewId } = useParams()
+    const navigate = useNavigate()
     const { bookmarks, toggleBookmark, isBookmarked, totalBookmarks } = useBookmarks(interviewId)
 
     useEffect(() => {
@@ -782,6 +783,16 @@ const Interview = () => {
 
                     {/* ── Action Buttons (Bottom on Mobile, Left Bottom on Desktop) ── */}
                     <div className='interview-nav__actions print-exclude'>
+                        {/* Mock Interview CTA */}
+                        <button
+                            type="button"
+                            className="nav-action-btn nav-action-btn--mock"
+                            onClick={() => navigate(`/interview/${interviewId}/mock`)}
+                            title="Start a live AI mock interview session"
+                        >
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                            Start Mock Interview
+                        </button>
                         <button
                             type="button"
                             className={`nav-action-btn ${shareState.isShared ? 'nav-action-btn--shared' : ''}`}

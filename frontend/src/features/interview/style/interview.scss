@@ -1219,6 +1219,21 @@ $severity-low: #3fb950;
             box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
         }
     }
+
+    &--mock {
+        background: linear-gradient(135deg, rgba(var(--color-accent-rgb, 255, 45, 120), 0.12), rgba(129, 140, 248, 0.08));
+        border-color: var(--color-accent);
+        color: var(--color-accent);
+        font-weight: 700;
+
+        &:hover:not(:disabled) {
+            background: var(--color-accent);
+            color: #fff;
+            border-color: var(--color-accent);
+            box-shadow: 0 6px 20px rgba(255, 45, 120, 0.3);
+            transform: translateY(-2px);
+        }
+    }
 }
 
 .btn-spinner {
