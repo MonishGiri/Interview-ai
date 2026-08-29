@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
+import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition'
 import '../style/interview.scss'
 import '../style/interview.print.scss'
 import { useInterview } from '../hooks/useInterview.js'
@@ -20,103 +21,41 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
     const [open, setOpen] = useState(false)
     const [practiceMode, setPracticeMode] = useState(false)
     const [userAnswer, setUserAnswer] = useState('')
-    const [isListening, setIsListening] = useState(false)
     const [evaluating, setEvaluating] = useState(false)
     const [evaluation, setEvaluation] = useState(null)
     const [evalError, setEvalError] = useState(null)
 
-    const recognitionRef = useRef(null)
-    const committedTextRef = useRef('')
-    const isListeningRef = useRef(false)
+    const baseTextRef = useRef('')
 
+    const {
+        transcript,
+        interimTranscript,
+        listening,
+        resetTranscript,
+        browserSupportsSpeechRecognition
+    } = useSpeechRecognition()
+
+    // Sync transcript into userAnswer — base text prefix + new speech
     useEffect(() => {
-        return () => {
-            isListeningRef.current = false
-            if (recognitionRef.current) {
-                try { recognitionRef.current.abort() } catch (e) { }
-                recognitionRef.current = null
-            }
+        if (listening) {
+            const combined = (baseTextRef.current + transcript).replace(/\s+/g, ' ').trim()
+            setUserAnswer(combined)
         }
-    }, [])
-
-    const startRecognitionSession = (SpeechRecognition) => {
-        if (!isListeningRef.current) return
-
-        let sessionFinal = ''
-
-        const recognition = new SpeechRecognition()
-        recognition.continuous = false
-        recognition.interimResults = true
-        recognition.lang = 'en-US'
-
-        recognition.onresult = (event) => {
-            let interim = ''
-            sessionFinal = ''
-
-            for (let i = 0; i < event.results.length; i++) {
-                const transcript = event.results[i][0]?.transcript || ''
-                if (event.results[i].isFinal) {
-                    sessionFinal += transcript
-                } else {
-                    interim += transcript
-                }
-            }
-
-            const preview = (committedTextRef.current + sessionFinal + interim).replace(/\s+/g, ' ').trim()
-            setUserAnswer(preview)
-        }
-
-        recognition.onerror = (e) => {
-            console.error('Speech recognition error:', e)
-            if (e.error === 'not-allowed' || e.error === 'service-not-allowed' || e.error === 'audio-capture') {
-                isListeningRef.current = false
-                setIsListening(false)
-            }
-        }
-
-        recognition.onend = () => {
-            if (sessionFinal) {
-                committedTextRef.current = (committedTextRef.current + sessionFinal + ' ').replace(/\s+/g, ' ')
-                setUserAnswer(committedTextRef.current.trim())
-            }
-
-            if (isListeningRef.current) {
-                setTimeout(() => {
-                    if (isListeningRef.current) {
-                        startRecognitionSession(SpeechRecognition)
-                    }
-                }, 100)
-            } else {
-                setIsListening(false)
-            }
-        }
-
-        recognitionRef.current = recognition
-        try {
-            recognition.start()
-        } catch (e) {
-            console.error('Failed to start recognition session:', e)
-        }
-    }
+    }, [transcript, listening])
 
     const toggleListening = () => {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-        if (!SpeechRecognition) {
-            alert("Voice recognition is not supported in your browser. Please type your answer.")
+        if (!browserSupportsSpeechRecognition) {
+            alert('Voice recognition is not supported in your browser. Please type your answer.')
             return
         }
 
-        if (isListening) {
-            isListeningRef.current = false
-            setIsListening(false)
-            if (recognitionRef.current) {
-                try { recognitionRef.current.stop() } catch (e) { }
-            }
+        if (listening) {
+            SpeechRecognition.stopListening()
         } else {
-            committedTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
-            isListeningRef.current = true
-            setIsListening(true)
-            startRecognitionSession(SpeechRecognition)
+            // Preserve any existing typed/spoken text as the base
+            baseTextRef.current = userAnswer ? (userAnswer.trim() + ' ') : ''
+            resetTranscript()
+            SpeechRecognition.startListening({ continuous: true, language: 'en-US' })
         }
     }
 
@@ -197,13 +136,13 @@ const QuestionCard = ({ item, index, questionType, submitAnswerForEvaluation, is
                                 <div className='voice-controls'>
                                     <button
                                         type="button"
-                                        className={`mic-btn ${isListening ? 'mic-btn--recording' : ''}`}
+                                        className={`mic-btn ${listening ? 'mic-btn--recording' : ''}`}
                                         onClick={toggleListening}
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" /><path d="M19 10v2a7 7 0 0 1-14 0v-2" /></svg>
-                                        {isListening ? 'Stop Recording...' : 'Record Voice Answer'}
+                                        {listening ? 'Stop Recording...' : 'Record Voice Answer'}
                                     </button>
-                                    {isListening && (
+                                    {listening && (
                                         <div className='recording-pulse-wrapper'>
                                             <span className='wave-dot'></span>
                                             <span className='wave-dot'></span>
